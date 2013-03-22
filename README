@@ -1,0 +1,2 @@
+ptm2human is a decoder for trace data output by Program Trace Macrocells
+(ETM) as specified by ARM's Program Flow Trace architecture documents.
