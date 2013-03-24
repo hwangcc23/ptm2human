@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include "output.h"
+#include "log.h"
 #include "stream.h"
 #include "pftproto.h"
 
@@ -15,12 +18,95 @@ DEF_PFTPKT(ignore, 0xff, 0x66);
 
 DECL_DECODE_FN(async)
 {
-    return 0;
+    int index;
+
+    /* continue until reach the end packet with the binary value b10000000 */
+    for (index = 1; index < stream->buff_len; index++) {
+        if (pkt[index] == 0x00) {
+            continue;
+        } else if (pkt[index] == (char)0x80) {
+            OUTPUT("[a-sync]\n");
+            index++;
+            break;
+        } else {
+            LOGE("Invalid a-sync packet\n");
+            index = -1;
+            break;
+        }
+    }
+
+    return index;
 }
 
 DECL_DECODE_FN(isync)
 {
-    return 0;
+    int i, index, c, reason;
+    unsigned int addr = 0, info, cyc_cnt = 0, contextid = 0;
+    static const int first_cyc_cnt_mask = 0x3c, first_cyc_cnt_shift = 2;
+    static const int first_c_bit_mask = 0x40, first_c_bit_shift = 6;
+    static const int c_bit_mask = 0x80, c_bit_shift = 7;
+ 
+    for (i = 0, index = 1; i < 4; i++, index++) {
+        addr |= pkt[index] << (8 * i);
+    }
+
+    info = pkt[index++];
+    reason = (info & 0x60) >> 5;
+
+    /* 
+     * XXX: The cycle count is present only when cycle-acculate tracing is enabled 
+     *      AND the reason code is not b00. 
+     */
+    if (stream->cycle_accurate && reason) {
+        cyc_cnt = (pkt[index] & first_cyc_cnt_mask) >> first_cyc_cnt_shift;
+        c = (pkt[index++] & first_c_bit_mask) >> first_c_bit_shift;
+        if (c) {
+            for (i = 1; i < 5; i++) {
+                cyc_cnt |= (pkt[index] & ~c_bit_mask) << (4 + 7 * (i - 1));
+                c = (pkt[index++] & c_bit_mask) >> c_bit_shift;
+                if (!c) {
+                    break;
+                }
+            }
+        }
+    }
+
+    switch (stream->contextid_size) {
+    case 1:
+        contextid = pkt[index++];
+        break;
+
+    case 2:
+        for (i = 0; i < 2; i++) {
+            contextid |= pkt[index++] << (8 * i);
+        }
+        break;
+
+    case 4:
+        for (i = 0; i < 4; i++) {
+            contextid |= pkt[index++] << (8 * i);
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    OUTPUT("[i-sync] addr = 0x%x (%s), ", addr & ~0x1, (addr & 0x1)? "thumb": "arm");
+    OUTPUT("info = |reason %d|NS %d|AltIS %d|Hyp %d|, ",  \
+                reason, \
+                (info & 0x08)? 1: 0,    \
+                (info & 0x04)? 1: 0,    \
+                (info & 0x02)? 1: 0);
+    if (stream->cycle_accurate) {
+        OUTPUT("cycle count = 0x%x, ", cyc_cnt);
+    }
+    if (stream->contextid_size) {
+        OUTPUT("context id = 0x%x, ", contextid);
+    }
+    OUTPUT("\n");
+
+    return index;
 }
 
 DECL_DECODE_FN(atom)
@@ -81,4 +167,5 @@ struct pftpkt *pftpkts[] =
     &PKT_NAME(timestamp),
     &PKT_NAME(exception_return),
     &PKT_NAME(ignore),
+    NULL,
 };

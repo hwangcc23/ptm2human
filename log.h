@@ -1,5 +1,5 @@
-#ifndef _OUTPUT_H
-#define _OUTPUT_H
+#ifndef _LOG_H
+#define _LOG_H
 
 #define LOGV(f, args...) fprintf(stdout, f, ## args)
 #define LOGD(f, args...) fprintf(stderr, f, ## args)

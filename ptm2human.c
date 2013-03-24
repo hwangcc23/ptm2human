@@ -108,7 +108,7 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    stream.buff_len = sb.st_size / 2 + 1;
+    stream.buff_len = sb.st_size;
     stream.buff = malloc(stream.buff_len);
     if (!(stream.buff)) {
         LOGE("Fail to allocate memory (%s)\n", strerror(errno));
