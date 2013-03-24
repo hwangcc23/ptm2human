@@ -9,7 +9,8 @@
 #include "log.h"
 #include "stream.h"
 
-static const struct option options[] = {
+static const struct option options[] = 
+{
     { "input", 1, 0, 'i' },
     { "context", 1, 0, 'c' },
     { "cycle-accurate", 0, 0, 'C' },
@@ -21,11 +22,26 @@ static const char *optstring = "i:c:Ch";
 
 void usage(void)
 {
+    LOGV("Usage: ptm2human [options]\n");
+    LOGV("Options:\n");
+    LOGV("  -i|--input <PTM data stream file>\n");
+    LOGV("  -c|--context <context ID size>\n");
+    LOGV("  -C|--cycle-accurate\n");
+    LOGV("  -h|--help\n");
 }
 
 int file2buff(const char *input_file, const char *buff, unsigned int buff_len)
 {
 	int fd;
+
+    if (!input_file) {
+        LOGE("Invalid input_file\n");
+        return -1;
+    }
+    if (!buff) {
+        LOGE("Invalid buff\n");
+        return -1;
+    }
 
 	fd = open(input_file, O_RDONLY);
 	if (fd == -1) {

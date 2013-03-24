@@ -40,11 +40,11 @@ DECL_DECODE_FN(async)
 
 DECL_DECODE_FN(isync)
 {
-    int i, index, c, reason;
+    int i, index, c_bit, reason;
     unsigned int addr = 0, info, cyc_cnt = 0, contextid = 0;
-    static const int first_cyc_cnt_mask = 0x3c, first_cyc_cnt_shift = 2;
-    static const int first_c_bit_mask = 0x40, first_c_bit_shift = 6;
-    static const int c_bit_mask = 0x80, c_bit_shift = 7;
+    static const char first_cyc_cnt_mask = 0x3c, first_cyc_cnt_shift = 2;
+    static const char first_c_bit_mask = 0x40, first_c_bit_shift = 6;
+    static const char c_bit_mask = 0x80;
  
     for (i = 0, index = 1; i < 4; i++, index++) {
         addr |= pkt[index] << (8 * i);
@@ -59,12 +59,14 @@ DECL_DECODE_FN(isync)
      */
     if (stream->cycle_accurate && reason) {
         cyc_cnt = (pkt[index] & first_cyc_cnt_mask) >> first_cyc_cnt_shift;
-        c = (pkt[index++] & first_c_bit_mask) >> first_c_bit_shift;
-        if (c) {
+        c_bit = (pkt[index++] & first_c_bit_mask) >> first_c_bit_shift;
+        LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
+        if (c_bit) {
             for (i = 1; i < 5; i++) {
                 cyc_cnt |= (pkt[index] & ~c_bit_mask) << (4 + 7 * (i - 1));
-                c = (pkt[index++] & c_bit_mask) >> c_bit_shift;
-                if (!c) {
+                c_bit = (pkt[index++] & c_bit_mask)? 1: 0;
+                LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
+                if (!c_bit) {
                     break;
                 }
             }
@@ -111,7 +113,44 @@ DECL_DECODE_FN(isync)
 
 DECL_DECODE_FN(atom)
 {
-    return 0;
+    int i, c_bit, F_bit, index;
+    unsigned int cyc_cnt;
+    static const char first_cyc_cnt_mask = 0x3c, first_cyc_cnt_shift = 2;
+    static const char first_c_bit_mask = 0x40, first_c_bit_shift = 6;
+    static const char F_bit_mask = 0x02, F_bit_shift = 1;
+    static const char c_bit_mask = 0x80;
+
+    if (stream->cycle_accurate) {
+        index = 0;
+        cyc_cnt = (pkt[index] & first_cyc_cnt_mask) >> first_cyc_cnt_shift;
+        c_bit = (pkt[index] & first_c_bit_mask) >> first_c_bit_shift;
+        F_bit = (pkt[index++] & F_bit_mask) >> F_bit_shift;
+        LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
+        if (c_bit) {
+            for (i = 1; i < 5; i++) {
+                cyc_cnt |= (pkt[index] & ~c_bit_mask) << (4 + 7 * (i - 1));
+                c_bit = (pkt[index++] & c_bit_mask)? 1: 0;
+                LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
+                if (!c_bit) {
+                    break;
+                }
+            } 
+        }
+
+        OUTPUT("[%s atom] cycle count = 0x%x\n", (F_bit)? "N": "E", cyc_cnt);
+
+        return index;
+    } else {
+        for (i = 1; i < 7; i++) {
+            if (pkt[0] & (1 << i)) {
+                OUTPUT("[N atom]\n");
+            } else {
+                OUTPUT("[E atom]\n");
+            }
+        }
+
+        return 1;
+    }
 }
 
 DECL_DECODE_FN(branch_addr)
