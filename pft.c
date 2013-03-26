@@ -42,9 +42,6 @@ DECL_DECODE_FN(isync)
 {
     int i, index, c_bit, reason;
     unsigned int addr = 0, info, cyc_cnt = 0, contextid = 0;
-    static const char first_cyc_cnt_mask = 0x3c, first_cyc_cnt_shift = 2;
-    static const char first_c_bit_mask = 0x40, first_c_bit_shift = 6;
-    static const char c_bit_mask = 0x80;
  
     for (i = 0, index = 1; i < 4; i++, index++) {
         addr |= pkt[index] << (8 * i);
@@ -54,17 +51,17 @@ DECL_DECODE_FN(isync)
     reason = (info & 0x60) >> 5;
 
     /* 
-     * XXX: The cycle count is present only when cycle-acculate tracing is enabled 
-     *      AND the reason code is not b00. 
+     * The cycle count is present only when cycle-acculate tracing is enabled 
+     * AND the reason code is not b00. 
      */
     if (stream->cycle_accurate && reason) {
-        cyc_cnt = (pkt[index] & first_cyc_cnt_mask) >> first_cyc_cnt_shift;
-        c_bit = (pkt[index++] & first_c_bit_mask) >> first_c_bit_shift;
+        cyc_cnt = (pkt[index] & 0x3c) >> 2;
+        c_bit = (pkt[index++] & 0x40) >> 6;
         LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
         if (c_bit) {
             for (i = 1; i < 5; i++) {
-                cyc_cnt |= (pkt[index] & ~c_bit_mask) << (4 + 7 * (i - 1));
-                c_bit = (pkt[index++] & c_bit_mask)? 1: 0;
+                cyc_cnt |= (pkt[index] & 0x7f) << (4 + 7 * (i - 1));
+                c_bit = (pkt[index++] & 0x80)? 1: 0;
                 LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
                 if (!c_bit) {
                     break;
@@ -115,21 +112,18 @@ DECL_DECODE_FN(atom)
 {
     int i, c_bit, F_bit, index;
     unsigned int cyc_cnt;
-    static const char first_cyc_cnt_mask = 0x3c, first_cyc_cnt_shift = 2;
-    static const char first_c_bit_mask = 0x40, first_c_bit_shift = 6;
     static const char F_bit_mask = 0x02, F_bit_shift = 1;
-    static const char c_bit_mask = 0x80;
 
     if (stream->cycle_accurate) {
         index = 0;
-        cyc_cnt = (pkt[index] & first_cyc_cnt_mask) >> first_cyc_cnt_shift;
-        c_bit = (pkt[index] & first_c_bit_mask) >> first_c_bit_shift;
+        cyc_cnt = (pkt[index] & 0x3c) >> 2;
+        c_bit = (pkt[index] & 0x40) >> 6;
         F_bit = (pkt[index++] & F_bit_mask) >> F_bit_shift;
         LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
         if (c_bit) {
             for (i = 1; i < 5; i++) {
-                cyc_cnt |= (pkt[index] & ~c_bit_mask) << (4 + 7 * (i - 1));
-                c_bit = (pkt[index++] & c_bit_mask)? 1: 0;
+                cyc_cnt |= (pkt[index] & 0x7f) << (4 + 7 * (i - 1));
+                c_bit = (pkt[index++] & 0x80)? 1: 0;
                 LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
                 if (!c_bit) {
                     break;
@@ -155,42 +149,214 @@ DECL_DECODE_FN(atom)
 
 DECL_DECODE_FN(branch_addr)
 {
-    return 0;
+    int index, have_exp = 0, NS, Hyp, i, c_bit;
+    unsigned int addr, exp, cyc_cnt = 0;
+
+    /* 
+     * XXX: Only for ARM and Thumb state.
+     */
+    for (addr = 0, index = 0; index < 4; index++) {
+        addr |= (pkt[index] & 0x7f) << (6 * index);
+
+        if (!(pkt[index] & 0x80))
+            break;
+    }
+    if (index == 4) {
+        if (pkt[index] & 0x10) {
+            /* Thumb state format */
+            addr <<= 1;
+            addr |= (pkt[index] & 0x0f) << 28;
+            addr &= 0xfffffffe;
+        } else {
+            /* ARM state format */
+            addr <<= 2;
+            addr |= (pkt[index] & 0x07) << 29;
+            addr &= 0xfffffffc;
+        }
+
+        if (pkt[index++] & 0x40) {
+            have_exp = 1;
+            NS = (pkt[index] & 0x01)? 1: 0;
+            exp = (pkt[index] & 0x1E);
+            if (pkt[index++] & 0x80) {
+                Hyp = (pkt[index] & 0x20)? 1: 0;
+                exp |= (pkt[index] & 0x1F) << 4;
+            }
+        }
+    } else {
+        /* FIXME: assume ARM state format */
+        addr <<= 2;
+        addr &= 0xfffffffc;
+    }
+
+    if (stream->cycle_accurate) {
+        cyc_cnt = (pkt[index] & 0x3c) >> 2;
+        c_bit = (pkt[index++] & 0x40) >> 6;
+        LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
+        if (c_bit) {
+            for (i = 1; i < 5; i++) {
+                cyc_cnt |= (pkt[index] & 0x7f) << (4 + 7 * (i - 1));
+                c_bit = (pkt[index++] & 0x80)? 1: 0;
+                LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
+                if (!c_bit) {
+                    break;
+                }
+            }
+        }
+    }
+
+    OUTPUT("[branch address] addr = 0x%x, ", addr);
+    if (have_exp) {
+        OUTPUT("info = |exception %d|NS %d|Hyp %d|, ", exp, NS, Hyp);
+    }
+    if (stream->cycle_accurate) {
+        OUTPUT("cycle count = 0x%x, ", cyc_cnt);
+    }
+    OUTPUT("\n");
+
+    return index;
 }
 
 DECL_DECODE_FN(waypoint_update)
 {
-    return 0;
+    int index, AltS = -1;
+    unsigned int addr;
+
+    for (addr = 0, index = 1; index < 5; index++) {
+        addr |= (pkt[index] & 0x7f) << (6 * (index - 1));
+
+        if (!(pkt[index] & 0x80))
+            break;
+    }
+    if (index == 5) {
+        if (pkt[index] & 0x10) {
+            /* Thumb state format */
+            addr <<= 1;
+            addr |= (pkt[index] & 0x0f) << 28;
+            addr &= 0xfffffffe;
+            if (pkt[index++] & 0x40) {
+                AltS = (pkt[index] & 0x40)? 1: 0;
+                index++;
+            }
+        } else {
+            /* ARM state format */
+            addr <<= 2;
+            addr |= (pkt[index] & 0x07) << 29;
+            addr &= 0xfffffffc;
+            if (pkt[index++] & 0x40) {
+                index++;
+            }
+        }
+    }
+
+    OUTPUT("[waypoint update] addr = 0x%x, ", addr);
+    if (AltS != -1) {
+        OUTPUT(" AltS = %d, ", AltS);
+    }
+    OUTPUT("\n");
+
+    return index;
 }
 
 DECL_DECODE_FN(trigger)
 {
-    return 0;
+    OUTPUT("[trigger]\n");
+
+    return 1;
 }
 
 DECL_DECODE_FN(contextid)
 {
-    return 0;
+    unsigned int contextid;
+    int i, index = 1;
+
+    switch (stream->contextid_size) {
+    case 1:
+        contextid = pkt[index++];
+        break;
+
+    case 2:
+        for (i = 0; i < 2; i++) {
+            contextid |= pkt[index++] << (8 * i);
+        }
+        break;
+
+    case 4:
+        for (i = 0; i < 4; i++) {
+            contextid |= pkt[index++] << (8 * i);
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    OUTPUT("[context ID] context ID = 0x%x\n", contextid);
+
+    return index;
 }
 
 DECL_DECODE_FN(vmid)
 {
-    return 0;
+    OUTPUT("[VMID] VMID = 0x%02x\n", pkt[1]);
+
+    return 1;
 }
 
 DECL_DECODE_FN(timestamp)
 {
-    return 0;
+    unsigned long long timestamp;
+    int index, c_bit, i;
+    unsigned int cyc_cnt;
+
+    for (index = 1, timestamp = 0; index < 9; index++) {
+        timestamp |= (pkt[index] & 0x7f) << (7 * (index - 1));
+        if (pkt[index] & 0x80) {
+            break;
+        }
+    }
+    if (index == 9) {
+        timestamp |= (unsigned long long)(pkt[index]) << 56;
+        index++;
+    }
+
+    if (stream->cycle_accurate) {
+        cyc_cnt = (pkt[index] & 0x3c) >> 2;
+        c_bit = (pkt[index++] & 0x40) >> 6;
+        LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
+        if (c_bit) {
+            for (i = 1; i < 5; i++) {
+                cyc_cnt |= (pkt[index] & 0x7f) << (4 + 7 * (i - 1));
+                c_bit = (pkt[index++] & 0x80)? 1: 0;
+                LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
+                if (!c_bit) {
+                    break;
+                }
+            }
+        }
+    }
+
+    OUTPUT("[timestamp] timestamp = 0x%llx ", timestamp);
+    if (stream->cycle_accurate) {
+        OUTPUT("cycle count = 0x%x, ", cyc_cnt);
+    }
+    OUTPUT("\n");
+
+    return index;
 }
 
 DECL_DECODE_FN(exception_return)
 {
-    return 0;
+    OUTPUT("[exception return]\n");
+
+    return 1;
 }
 
 DECL_DECODE_FN(ignore)
 {
-    return 0;
+    OUTPUT("[ignore]\n");
+
+    return 1;
 }
 
 struct pftpkt *pftpkts[] =
