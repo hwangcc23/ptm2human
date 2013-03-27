@@ -149,7 +149,7 @@ DECL_DECODE_FN(atom)
 
 DECL_DECODE_FN(branch_addr)
 {
-    int index, have_exp = 0, NS, Hyp, i, c_bit;
+    int index, full_addr, have_exp = 0, NS, Hyp, i, c_bit;
     unsigned int addr, exp, cyc_cnt = 0;
 
     /* 
@@ -162,6 +162,8 @@ DECL_DECODE_FN(branch_addr)
             break;
     }
     if (index == 4) {
+        full_addr = 1;
+
         if (pkt[index] & 0x10) {
             /* Thumb state format */
             addr <<= 1;
@@ -184,9 +186,7 @@ DECL_DECODE_FN(branch_addr)
             }
         }
     } else {
-        /* FIXME: assume ARM state format */
-        addr <<= 2;
-        addr &= 0xfffffffc;
+        full_addr = 0;
     }
 
     if (stream->cycle_accurate) {
@@ -205,7 +205,12 @@ DECL_DECODE_FN(branch_addr)
         }
     }
 
-    OUTPUT("[branch address] addr = 0x%x, ", addr);
+    OUTPUT("[branch address] ");
+    if (full_addr) {
+        OUTPUT("addr = 0x%x, ", addr);
+    } else {
+        OUTPUT("addr offset = 0x%x * n(n=4 for ARM state and n=2 for Thumb state), ", addr);
+    }
     if (have_exp) {
         OUTPUT("info = |exception %d|NS %d|Hyp %d|, ", exp, NS, Hyp);
     }
