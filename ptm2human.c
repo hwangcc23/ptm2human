@@ -134,9 +134,13 @@ int main(int argc, char **argv)
 
     file2buff(input_file, stream.buff, stream.buff_len);
 
-    ret = decode_stream(&stream);
+    ret = decode_etb_stream(&stream);
 
     free((void *)stream.buff);
 
-    return EXIT_SUCCESS;
+    if (ret) {
+        return EXIT_FAILURE;
+    } else {
+        return EXIT_SUCCESS;
+    }
 }

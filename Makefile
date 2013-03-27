@@ -1,6 +1,6 @@
 CFLAGS := -g3 -O2 -Wall
 LDFLAGS :=
-SRCS := pft.c ptm2human.c stream.c
+SRCS := pft.c ptm2human.c stream.c etb_format.c
 OBJS := $(SRCS:.c=.o)
 
 CC ?= gcc

@@ -3,12 +3,13 @@
 
 struct stream
 {
-    const char *buff;
+    char *buff;
     unsigned int buff_len;
     int cycle_accurate;
     int contextid_size;
 };
 
 extern int decode_stream(struct stream *stream);
+extern int decode_etb_stream(struct stream *stream);
 
 #endif

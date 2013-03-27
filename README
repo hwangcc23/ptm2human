@@ -1,3 +1,3 @@
 ptm2human is a decoder for trace data output by Program Trace Macrocells
 (ETM) as specified by ARM's Program Flow Trace architecture documents.
-It translates the format of a trace stream to a human-readable format. 
+It translates the trace data from ARM ETB to a human-readable format. 

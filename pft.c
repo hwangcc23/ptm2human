@@ -34,6 +34,10 @@ DECL_DECODE_FN(async)
             break;
         }
     }
+    if (index == stream->buff_len) {
+        LOGE("Invalid a-sync packet\n");
+        index = -1;
+    }
 
     return index;
 }
