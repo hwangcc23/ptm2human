@@ -69,7 +69,7 @@ int decode_etb_stream(struct stream *etb_stream)
                 if (end & (1 << (byte_idx / 2))) {
                     /* data corresponds to the previous ID */
                     if (pre_id < 0) {
-                        /* drop the byte since there is no ID packet yet */
+                        /* drop the byte since there is no ID byte yet */
                         continue;
                     }
                     stream[pre_id].buff[stream[pre_id].buff_len] = c;
@@ -77,7 +77,7 @@ int decode_etb_stream(struct stream *etb_stream)
                 } else {
                     /* data corresponds to the new ID */
                     if (cur_id < 0) {
-                        /* drop the byte since there is no ID packet yet */
+                        /* drop the byte since there is no ID byte yet */
                         continue;
                     }
                     stream[cur_id].buff[stream[cur_id].buff_len] = c;
@@ -114,7 +114,7 @@ int decode_etb_stream(struct stream *etb_stream)
                 } else {
                     /* data byte */
                     if (cur_id < 0) {
-                        /* drop the byte since there is no ID packet yet */
+                        /* drop the byte since there is no ID byte yet */
                         continue;
                     }
                     if (unused_pkt) {
