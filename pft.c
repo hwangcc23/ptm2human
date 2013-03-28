@@ -153,8 +153,8 @@ DECL_DECODE_FN(atom)
 
 DECL_DECODE_FN(branch_addr)
 {
-    int index, full_addr, have_exp = 0, NS, Hyp, i, c_bit;
-    unsigned int addr, exp, cyc_cnt = 0;
+    int index, full_addr, have_exp = 0, NS = 0, Hyp = 0, i, c_bit;
+    unsigned int addr, exp = 0, cyc_cnt = 0;
 
     /* 
      * XXX: Only for ARM and Thumb state.
@@ -276,7 +276,7 @@ DECL_DECODE_FN(trigger)
 
 DECL_DECODE_FN(contextid)
 {
-    unsigned int contextid;
+    unsigned int contextid = 0;
     int i, index = 1;
 
     switch (stream->contextid_size) {
@@ -316,7 +316,7 @@ DECL_DECODE_FN(timestamp)
 {
     unsigned long long timestamp;
     int index, c_bit, i;
-    unsigned int cyc_cnt;
+    unsigned int cyc_cnt = 0;
 
     for (index = 1, timestamp = 0; index < 9; index++) {
         timestamp |= (pkt[index] & 0x7f) << (7 * (index - 1));

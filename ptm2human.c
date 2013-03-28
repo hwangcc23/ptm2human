@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include "log.h"
 #include "stream.h"
 
@@ -32,7 +33,7 @@ void usage(void)
 
 int file2buff(const char *input_file, const char *buff, unsigned int buff_len)
 {
-	int fd;
+    int fd;
 
     if (!input_file) {
         LOGE("Invalid input_file\n");
@@ -43,21 +44,21 @@ int file2buff(const char *input_file, const char *buff, unsigned int buff_len)
         return -1;
     }
 
-	fd = open(input_file, O_RDONLY);
-	if (fd == -1) {
-		LOGE("Fail to open %s (%s)\n", input_file, strerror(errno));
-		return -1;
-	}
+    fd = open(input_file, O_RDONLY);
+    if (fd == -1) {
+        LOGE("Fail to open %s (%s)\n", input_file, strerror(errno));
+        return -1;
+    }
 
     LOGV("Reading %s\n", input_file);
-	if (read(fd, (void *)buff, buff_len) != buff_len) {
-		LOGE("Fail to read %s (%s)\n", input_file, strerror(errno));
-		return -1;
-	}
+    if (read(fd, (void *)buff, buff_len) != buff_len) {
+        LOGE("Fail to read %s (%s)\n", input_file, strerror(errno));
+        return -1;
+    }
 
-	close(fd);
+    close(fd);
 
-	return 0;
+    return 0;
 }
 
 int main(int argc, char **argv)
@@ -99,11 +100,11 @@ int main(int argc, char **argv)
         }
     }
 
-	if (argc != optind || !input_file) {
-		LOGE("Invalid arguments or no input file\n");
-		usage();
-		return EXIT_FAILURE;
-	}
+    if (argc != optind || !input_file) {
+        LOGE("Invalid arguments or no input file\n");
+        usage();
+        return EXIT_FAILURE;
+    }
 
     /* validate context ID size */
     switch (stream.contextid_size) {
