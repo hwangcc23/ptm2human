@@ -11,9 +11,27 @@ int decode_stream(struct stream *stream)
         LOGE("Invalid struct stream pointer\n");
         return -1;
     }
+    if (stream->state == READING) {
+        /* READING -> SYNCING */
+        stream->state++;
+    } else {
+        LOGE("Stream state is not correct\n");
+        return -1;
+    }
+
+    LOGV("Syncing the trace stream...\n");
+    cur = synchronization(stream);
+    if (cur < 0) {
+        LOGE("Cannot find any synchronization packet\n");
+        return -1;
+    } else {
+        LOGV("Trace starts from offset %d\n", cur);
+    }
 
     LOGV("Decoding the trace stream...\n");
-    for (cur = 0; cur < stream->buff_len; ) {
+    /* INSYNC -> DECODING */
+    stream->state++;
+    for (; cur < stream->buff_len; ) {
         char c = stream->buff[cur];
 
         LOGD("Got a packet header 0x%02x at offset %d\n", c, cur);
@@ -26,13 +44,16 @@ int decode_stream(struct stream *stream)
         }
         if (!pftpkts[i]) {
             LOGE("Cannot recognize a packet header 0x%02x\n", c);
-            return -1;
+            LOGE("Porceed on guesswork\n");
+            cur++;
+            continue;
         }
 
-        ret = pftpkts[i]->decode(&(stream->buff[cur]), stream);
+        ret = pftpkts[i]->decode((const unsigned char *)&(stream->buff[cur]), stream);
         if (ret <= 0) {
             LOGE("Cannot decode a packet of type %s at offset %d\n", pftpkts[i]->name, cur);
-            return -1;
+            LOGE("Proceed on guesswork\n");
+            cur++;
         } else {
             cur += ret;
         }

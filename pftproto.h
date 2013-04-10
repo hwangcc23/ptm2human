@@ -1,7 +1,7 @@
 #ifndef _PFTPROTO_H
 #define _PFTPROTO_H
 
-typedef char pkt_header;
+typedef unsigned char pkt_header;
 
 struct pftpkt 
 {
@@ -14,7 +14,7 @@ struct pftpkt
 #define DECODE_FUNC_NAME(__n) decode_ ## __n
 
 #define DECL_DECODE_FN(__n) \
-    static int DECODE_FUNC_NAME(__n)(const char *pkt, struct stream *stream)
+    static int DECODE_FUNC_NAME(__n)(const unsigned char *pkt, struct stream *stream)
 
 #define PKT_NAME(__n) \
     pftpkt ## __n
@@ -33,5 +33,6 @@ struct pftpkt
     pftpkt ## __n
 
 extern struct pftpkt *pftpkts[];
+extern int synchronization(struct stream *stream);
 
 #endif

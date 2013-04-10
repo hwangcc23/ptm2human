@@ -9,20 +9,23 @@
 #define ETB_PACKET_SIZE 16
 #define NULL_TRACE_SOURCE 0
 
-static int init_stream(struct stream *stream, int buff_len)
+static int init_stream(struct stream *stream, int buff_len, \
+            int cycle_accurate, int contextid_size)
 {
     if (!stream) {
         LOGE("Invalid stream pointer\n");
         return -1;
     }
 
+    memset(stream, 0, sizeof(struct stream));
+
+    stream->cycle_accurate = cycle_accurate;
+    stream->contextid_size = contextid_size;
     stream->buff = malloc(buff_len);
     if (!(stream->buff)) {
         LOGE("Fail to allocate memory (%s)\n", strerror(errno));
         return -1;
     }
-
-    stream->buff_len = 0;
     memset((void *)stream->buff, 0, stream->buff_len);
 
     return 0;
@@ -32,7 +35,7 @@ int decode_etb_stream(struct stream *etb_stream)
 {
     struct stream *stream;
     int nr_stream, pkt_idx, byte_idx, id, cur_id, pre_id, nr_new, i, unused_pkt = 0;
-    char c, end;
+    unsigned char c, end, tmp;
 
     if (!etb_stream) {
         LOGE("Invalid stream pointer\n");
@@ -48,7 +51,8 @@ int decode_etb_stream(struct stream *etb_stream)
         LOGE("Fail to allocate stream (%s)\n", strerror(errno));
         return -1;
     }
-    if (init_stream(stream, etb_stream->buff_len)) {
+    if (init_stream(stream, etb_stream->buff_len,
+            etb_stream->cycle_accurate, etb_stream->contextid_size)) {
         return -1;
     }
 
@@ -65,8 +69,9 @@ int decode_etb_stream(struct stream *etb_stream)
                     continue;
                 }
 
-                c = (c >> 1) & 0x7f;
-                if (end & (1 << (byte_idx / 2))) {
+                tmp = etb_stream->buff[pkt_idx + byte_idx - 1];
+                if ((tmp & 1) &&    /* previous byte is an ID byte */   \
+                        end & (1 << (byte_idx / 2))) {
                     /* data corresponds to the previous ID */
                     if (pre_id < 0) {
                         /* drop the byte since there is no ID byte yet */
@@ -86,7 +91,7 @@ int decode_etb_stream(struct stream *etb_stream)
             } else {
                 if (c & 1) {
                     /* ID byte */
-                    id = (c >> 1) & 0x0000007f;
+                    id = (c >> 1) & 0x7f;
                     if (id == NULL_TRACE_SOURCE) {
                         unused_pkt = 1;
                         continue;
@@ -105,7 +110,8 @@ int decode_etb_stream(struct stream *etb_stream)
                             return -1;
                         }
                         for (i = (nr_stream - nr_new); i < nr_stream; i++) {
-                            if (init_stream(&(stream[i]), etb_stream->buff_len)) {
+                            if (init_stream(&(stream[i]), etb_stream->buff_len, \
+                                    etb_stream->cycle_accurate, etb_stream->contextid_size)) {
                                 LOGE("Fail to init stream %d\n", i);
                                 return -1;
                             }
@@ -113,6 +119,7 @@ int decode_etb_stream(struct stream *etb_stream)
                     }
                 } else {
                     /* data byte */
+                    c = (c >> 1) & 0x7f;
                     if (cur_id < 0) {
                         /* drop the byte since there is no ID byte yet */
                         continue;

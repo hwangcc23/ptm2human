@@ -24,7 +24,7 @@ DECL_DECODE_FN(async)
     for (index = 1; index < stream->buff_len; index++) {
         if (pkt[index] == 0x00) {
             continue;
-        } else if (pkt[index] == (char)0x80) {
+        } else if (pkt[index] == (unsigned char)0x80) {
             OUTPUT("[a-sync]\n");
             index++;
             break;
@@ -95,19 +95,21 @@ DECL_DECODE_FN(isync)
         break;
     }
 
-    OUTPUT("[i-sync] addr = 0x%x (%s), ", addr & ~0x1, (addr & 0x1)? "thumb": "arm");
-    OUTPUT("info = |reason %d|NS %d|AltIS %d|Hyp %d|, ",  \
-                reason, \
-                (info & 0x08)? 1: 0,    \
-                (info & 0x04)? 1: 0,    \
-                (info & 0x02)? 1: 0);
-    if (stream->cycle_accurate) {
-        OUTPUT("cycle count = 0x%x, ", cyc_cnt);
+    if (stream->state >= DECODING) {
+        OUTPUT("[i-sync] addr = 0x%x (%s), ", addr & ~0x1, (addr & 0x1)? "thumb": "arm");
+        OUTPUT("info = |reason %d|NS %d|AltIS %d|Hyp %d|, ",  \
+                    reason, \
+                    (info & 0x08)? 1: 0,    \
+                    (info & 0x04)? 1: 0,    \
+                    (info & 0x02)? 1: 0);
+        if (stream->cycle_accurate) {
+            OUTPUT("cycle count = 0x%x, ", cyc_cnt);
+        }
+        if (stream->contextid_size) {
+            OUTPUT("context id = 0x%x, ", contextid);
+        }
+        OUTPUT("\n");
     }
-    if (stream->contextid_size) {
-        OUTPUT("context id = 0x%x, ", contextid);
-    }
-    OUTPUT("\n");
 
     return index;
 }
@@ -162,8 +164,10 @@ DECL_DECODE_FN(branch_addr)
     for (addr = 0, index = 0; index < 4; index++) {
         addr |= (pkt[index] & 0x7f) << (6 * index);
 
-        if (!(pkt[index] & 0x80))
+        if (!(pkt[index] & 0x80)) {
+            index++;
             break;
+        }
     }
     if (index == 4) {
         full_addr = 1;
@@ -228,16 +232,19 @@ DECL_DECODE_FN(branch_addr)
 
 DECL_DECODE_FN(waypoint_update)
 {
-    int index, AltS = -1;
+    int index, full_addr, AltS = -1;
     unsigned int addr;
 
     for (addr = 0, index = 1; index < 5; index++) {
         addr |= (pkt[index] & 0x7f) << (6 * (index - 1));
 
-        if (!(pkt[index] & 0x80))
+        if (!(pkt[index] & 0x80)) {
+            index++;
             break;
+        }
     }
     if (index == 5) {
+        full_addr = 1;
         if (pkt[index] & 0x10) {
             /* Thumb state format */
             addr <<= 1;
@@ -256,11 +263,18 @@ DECL_DECODE_FN(waypoint_update)
                 index++;
             }
         }
+    } else {
+        full_addr = 0;
     }
 
-    OUTPUT("[waypoint update] addr = 0x%x, ", addr);
+    OUTPUT("[waypoint update] ");
+    if (full_addr) {
+        OUTPUT("addr = 0x%x, ", addr);
+    } else {
+        OUTPUT("addr offset = 0x%x * n(n=4 for ARM state and n=2 for Thumb state ", addr);
+    }
     if (AltS != -1) {
-        OUTPUT(" AltS = %d, ", AltS);
+        OUTPUT("AltS = %d, ", AltS);
     }
     OUTPUT("\n");
 
@@ -320,7 +334,8 @@ DECL_DECODE_FN(timestamp)
 
     for (index = 1, timestamp = 0; index < 9; index++) {
         timestamp |= (pkt[index] & 0x7f) << (7 * (index - 1));
-        if (pkt[index] & 0x80) {
+        if (!(pkt[index] & 0x80)) {
+            index++;
             break;
         }
     }
@@ -366,6 +381,26 @@ DECL_DECODE_FN(ignore)
     OUTPUT("[ignore]\n");
 
     return 1;
+}
+
+int synchronization(struct stream *stream)
+{
+    int i, p;
+    unsigned char c;
+
+    for (i = 0; i < stream->buff_len; i++) {
+        c = stream->buff[i];
+        if ((c & PKT_NAME(isync).mask) == PKT_NAME(isync).val) {
+            p = DECODE_FUNC_NAME(isync)((const unsigned char *)&(stream->buff[i]), stream);
+            if (p > 0) {
+                /* SYNCING -> INSYNC */
+                stream->state++;
+                return i;
+            }
+        }
+    }
+
+    return -1;
 }
 
 struct pftpkt *pftpkts[] =
