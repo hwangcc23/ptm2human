@@ -271,7 +271,7 @@ DECL_DECODE_FN(waypoint_update)
     if (full_addr) {
         OUTPUT("addr = 0x%x, ", addr);
     } else {
-        OUTPUT("addr offset = 0x%x * n(n=4 for ARM state and n=2 for Thumb state ", addr);
+        OUTPUT("addr offset = 0x%x * n(n=4 for ARM state and n=2 for Thumb state) ", addr);
     }
     if (AltS != -1) {
         OUTPUT("AltS = %d, ", AltS);

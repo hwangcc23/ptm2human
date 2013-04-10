@@ -44,7 +44,7 @@ int decode_stream(struct stream *stream)
         }
         if (!pftpkts[i]) {
             LOGE("Cannot recognize a packet header 0x%02x\n", c);
-            LOGE("Porceed on guesswork\n");
+            LOGE("Proceed on guesswork\n");
             cur++;
             continue;
         }
