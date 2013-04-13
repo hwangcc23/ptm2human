@@ -17,6 +17,7 @@ struct stream
     int cycle_accurate;
     int contextid_size;
     int state;
+    struct tracer tracer;
 };
 
 extern int decode_stream(struct stream *stream);

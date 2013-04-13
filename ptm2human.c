@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "log.h"
+#include "tracer.h"
 #include "stream.h"
 
 static const struct option options[] = 

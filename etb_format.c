@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include "tracer.h"
 #include "stream.h"
 #include "log.h"
 #include "output.h"

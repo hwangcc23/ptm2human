@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "log.h"
+#include "tracer.h"
 #include "stream.h"
 #include "pftproto.h"
 
@@ -25,7 +26,7 @@ int decode_stream(struct stream *stream)
         LOGE("Cannot find any synchronization packet\n");
         return -1;
     } else {
-        LOGV("Trace starts from offset %d\n", cur);
+        LOGD("Trace starts from offset %d\n", cur);
     }
 
     LOGV("Decoding the trace stream...\n");

@@ -1,3 +1,8 @@
-ptm2human is a decoder for trace data output by Program Trace Macrocells
-(PTM) as specified by ARM's Program Flow Trace architecture documents.
-It translates the trace data from ARM ETB to a human-readable format. 
+ptm2human is a decoder for trace data output by Program Trace Macrocells 
+(PTM) [1] as specified by the ARM's Program Flow Trace architecture document [2].
+It deconstructs ID packets and data packets from the formatter of ARM Coresight ETB [3],
+and then translates the trace data to a human-readable format. 
+
+[1] http://infocenter.arm.com/help/topic/com.arm.doc.ddi0401c/DDI0401C_coresight_ptm_a9_r1p0_trm.pdf
+[2] http://infocenter.arm.com/help/topic/com.arm.doc.ihi0035b/IHI0035B_cs_pft_v1_1_architecture_spec.pdf
+[3] http://infocenter.arm.com/help/topic/com.arm.doc.ddi0314h/DDI0314H_coresight_components_trm.pdf
