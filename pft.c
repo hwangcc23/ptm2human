@@ -48,7 +48,7 @@ DECL_DECODE_FN(isync)
     unsigned int addr = 0, info, cyc_cnt = 0, contextid = 0;
  
     for (i = 0, index = 1; i < 4; i++, index++) {
-        addr |= pkt[index] << (8 * i);
+        addr |= (unsigned int)(pkt[index]) << (8 * i);
     }
 
     info = pkt[index++];
@@ -59,12 +59,12 @@ DECL_DECODE_FN(isync)
      * AND the reason code is not b00. 
      */
     if (stream->cycle_accurate && reason) {
-        cyc_cnt = (pkt[index] & 0x3c) >> 2;
+        cyc_cnt = (unsigned int)(pkt[index] & 0x3c) >> 2;
         c_bit = (pkt[index++] & 0x40) >> 6;
         LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
         if (c_bit) {
             for (i = 1; i < 5; i++) {
-                cyc_cnt |= (pkt[index] & 0x7f) << (4 + 7 * (i - 1));
+                cyc_cnt |= (unsigned int)(pkt[index] & 0x7f) << (4 + 7 * (i - 1));
                 c_bit = (pkt[index++] & 0x80)? 1: 0;
                 LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
                 if (!c_bit) {
@@ -76,18 +76,18 @@ DECL_DECODE_FN(isync)
 
     switch (stream->contextid_size) {
     case 1:
-        contextid = pkt[index++];
+        contextid = (unsigned int)(pkt[index++]);
         break;
 
     case 2:
         for (i = 0; i < 2; i++) {
-            contextid |= pkt[index++] << (8 * i);
+            contextid |= (unsigned int)(pkt[index++]) << (8 * i);
         }
         break;
 
     case 4:
         for (i = 0; i < 4; i++) {
-            contextid |= pkt[index++] << (8 * i);
+            contextid |= (unsigned int)(pkt[index++]) << (8 * i);
         }
         break;
 
@@ -122,13 +122,13 @@ DECL_DECODE_FN(atom)
 
     if (stream->cycle_accurate) {
         index = 0;
-        cyc_cnt = (pkt[index] & 0x3c) >> 2;
+        cyc_cnt = (unsigned int)(pkt[index] & 0x3c) >> 2;
         c_bit = (pkt[index] & 0x40) >> 6;
         F_bit = (pkt[index++] & F_bit_mask) >> F_bit_shift;
         LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
         if (c_bit) {
             for (i = 1; i < 5; i++) {
-                cyc_cnt |= (pkt[index] & 0x7f) << (4 + 7 * (i - 1));
+                cyc_cnt |= (unsigned int)(pkt[index] & 0x7f) << (4 + 7 * (i - 1));
                 c_bit = (pkt[index++] & 0x80)? 1: 0;
                 LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
                 if (!c_bit) {
@@ -158,52 +158,55 @@ DECL_DECODE_FN(branch_addr)
     int index, full_addr, have_exp = 0, NS = 0, Hyp = 0, i, c_bit;
     unsigned int addr, exp = 0, cyc_cnt = 0;
 
-    /* 
-     * XXX: Only for ARM and Thumb state.
-     */
-    for (addr = 0, index = 0; index < 4; index++) {
-        addr |= (pkt[index] & 0x7f) << (6 * index);
-
-        if (!(pkt[index] & 0x80)) {
-            index++;
-            break;
-        }
-    }
-    if (index == 4) {
-        full_addr = 1;
-
-        if (pkt[index] & 0x10) {
-            /* Thumb state format */
-            addr <<= 1;
-            addr |= (pkt[index] & 0x0f) << 28;
-            addr &= 0xfffffffe;
-        } else {
-            /* ARM state format */
-            addr <<= 2;
-            addr |= (pkt[index] & 0x07) << 29;
-            addr &= 0xfffffffc;
-        }
-
-        if (pkt[index++] & 0x40) {
-            have_exp = 1;
-            NS = (pkt[index] & 0x01)? 1: 0;
-            exp = (pkt[index] & 0x1E);
-            if (pkt[index++] & 0x80) {
-                Hyp = (pkt[index] & 0x20)? 1: 0;
-                exp |= (pkt[index] & 0x1F) << 4;
+    index = 0;
+    addr = 0;
+    full_addr = 0;
+    do {
+        if (index == 0) {
+            addr = (unsigned int)(pkt[index] & 0x7e) >> 1;
+            if (!(pkt[index++] & 0x80)) {
+                break;
+            }
+        } else if (index >= 1 && index <= 3) {
+            addr |= (unsigned int)(pkt[index] & 0x7f) << (6 + 7 * (index - 1));
+            if (!(pkt[index++] & 0x80)) {
+                break;
+            }
+        } else if (index == 4) {
+            full_addr = 1;
+            if (pkt[index] & 0x20) {
+                /* Jazelle state */
+                addr |= (unsigned int)(pkt[index] & 0x1f) << 27;
+            } else if (pkt[index] & 0x10) {
+                /* Thumb state */
+                addr |= (unsigned int)(pkt[index] & 0x0f) << 27;
+                addr <<= 1;
+            } else {
+                /* ARM state */
+                addr |= (unsigned int)(pkt[index] & 0x07) << 27;
+                addr <<= 2;
+            }
+            if (!(pkt[index++] & 0x40)) {
+                break;
+            } else {
+                have_exp = 1;
+                NS = (pkt[index] & 0x01)? 1: 0;
+                exp = (pkt[index] & 0x1E);
+                if (pkt[index++] & 0x80) {
+                    Hyp = (pkt[index] & 0x20)? 1: 0;
+                    exp |= (pkt[index] & 0x1F) << 4;
+                }
             }
         }
-    } else {
-        full_addr = 0;
-    }
+    } while (index < 5);
 
     if (stream->cycle_accurate) {
-        cyc_cnt = (pkt[index] & 0x3c) >> 2;
+        cyc_cnt = (unsigned int)(pkt[index] & 0x3c) >> 2;
         c_bit = (pkt[index++] & 0x40) >> 6;
         LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
         if (c_bit) {
             for (i = 1; i < 5; i++) {
-                cyc_cnt |= (pkt[index] & 0x7f) << (4 + 7 * (i - 1));
+                cyc_cnt |= (unsigned int)(pkt[index] & 0x7f) << (4 + 7 * (i - 1));
                 c_bit = (pkt[index++] & 0x80)? 1: 0;
                 LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
                 if (!c_bit) {
@@ -217,7 +220,7 @@ DECL_DECODE_FN(branch_addr)
     if (full_addr) {
         OUTPUT("addr = 0x%x, ", addr);
     } else {
-        OUTPUT("addr offset = 0x%x * n(n=4 for ARM state and n=2 for Thumb state), ", addr);
+        OUTPUT("addr change = 0x%x * n (n=4 for ARM state, n=2 for Thumb state), ", addr);
     }
     if (have_exp) {
         OUTPUT("info = |exception %d|NS %d|Hyp %d|, ", exp, NS, Hyp);
@@ -235,43 +238,48 @@ DECL_DECODE_FN(waypoint_update)
     int index, full_addr, AltS = -1;
     unsigned int addr;
 
-    for (addr = 0, index = 1; index < 5; index++) {
-        addr |= (pkt[index] & 0x7f) << (6 * (index - 1));
-
-        if (!(pkt[index] & 0x80)) {
-            index++;
-            break;
-        }
-    }
-    if (index == 5) {
-        full_addr = 1;
-        if (pkt[index] & 0x10) {
-            /* Thumb state format */
-            addr <<= 1;
-            addr |= (pkt[index] & 0x0f) << 28;
-            addr &= 0xfffffffe;
-            if (pkt[index++] & 0x40) {
-                AltS = (pkt[index] & 0x40)? 1: 0;
-                index++;
+    index = 1;
+    addr = 0;
+    full_addr = 0;
+    do {
+        if (index == 1) {
+            addr = (unsigned int)(pkt[index] & 0x7e) >> 1;
+            if (!(pkt[index++] & 0x80)) {
+                break;
             }
-        } else {
-            /* ARM state format */
-            addr <<= 2;
-            addr |= (pkt[index] & 0x07) << 29;
-            addr &= 0xfffffffc;
-            if (pkt[index++] & 0x40) {
-                index++;
+        } else if (index >= 2 && index <= 4) {
+            addr |= (unsigned int)(pkt[index] & 0x7f) << (6 + 7 * (index - 2));
+            if (!(pkt[index++] & 0x80)) {
+                break;
+            }
+        } else if (index == 5) {
+            full_addr = 1;
+            if (pkt[index] & 0x10) {
+                /* Thumb state */
+                addr |= (unsigned int)(pkt[index] & 0x0f) << 27;
+                addr <<= 1;
+                if (pkt[index++] & 0x40) {
+                    AltS = (pkt[index] & 0x40)? 1: 0;
+                    index++;
+                    break;
+                }
+            } else {
+                /* ARM state */
+                addr |= (unsigned int)(pkt[index] & 0x07) << 27;
+                addr <<= 2;
+                if (pkt[index++] & 0x40) {
+                    index++;
+                    break;
+                }
             }
         }
-    } else {
-        full_addr = 0;
-    }
+    } while (index < 7);
 
     OUTPUT("[waypoint update] ");
     if (full_addr) {
         OUTPUT("addr = 0x%x, ", addr);
     } else {
-        OUTPUT("addr offset = 0x%x * n(n=4 for ARM state and n=2 for Thumb state) ", addr);
+        OUTPUT("addr change = 0x%x * n(n=4 for ARM state and n=2 for Thumb state) ", addr);
     }
     if (AltS != -1) {
         OUTPUT("AltS = %d, ", AltS);
@@ -295,18 +303,18 @@ DECL_DECODE_FN(contextid)
 
     switch (stream->contextid_size) {
     case 1:
-        contextid = pkt[index++];
+        contextid = (unsigned int)(pkt[index++]);
         break;
 
     case 2:
         for (i = 0; i < 2; i++) {
-            contextid |= pkt[index++] << (8 * i);
+            contextid |= (unsigned int)(pkt[index++]) << (8 * i);
         }
         break;
 
     case 4:
         for (i = 0; i < 4; i++) {
-            contextid |= pkt[index++] << (8 * i);
+            contextid |= (unsigned int)(pkt[index++]) << (8 * i);
         }
         break;
 
@@ -333,7 +341,7 @@ DECL_DECODE_FN(timestamp)
     unsigned int cyc_cnt = 0;
 
     for (index = 1, timestamp = 0; index < 9; index++) {
-        timestamp |= (pkt[index] & 0x7f) << (7 * (index - 1));
+        timestamp |= (unsigned long long)(pkt[index] & 0x7f) << (7 * (index - 1));
         if (!(pkt[index] & 0x80)) {
             index++;
             break;
@@ -345,12 +353,12 @@ DECL_DECODE_FN(timestamp)
     }
 
     if (stream->cycle_accurate) {
-        cyc_cnt = (pkt[index] & 0x3c) >> 2;
+        cyc_cnt = (unsigned int)(pkt[index] & 0x3c) >> 2;
         c_bit = (pkt[index++] & 0x40) >> 6;
         LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
         if (c_bit) {
             for (i = 1; i < 5; i++) {
-                cyc_cnt |= (pkt[index] & 0x7f) << (4 + 7 * (i - 1));
+                cyc_cnt |= (unsigned int)(pkt[index] & 0x7f) << (4 + 7 * (i - 1));
                 c_bit = (pkt[index++] & 0x80)? 1: 0;
                 LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
                 if (!c_bit) {
