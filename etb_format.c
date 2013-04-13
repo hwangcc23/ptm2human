@@ -57,9 +57,9 @@ int decode_etb_stream(struct stream *etb_stream)
     }
 
     for (pkt_idx = 0; pkt_idx < etb_stream->buff_len; pkt_idx += ETB_PACKET_SIZE) {
+        end = etb_stream->buff[pkt_idx + ETB_PACKET_SIZE - 1];
         for (byte_idx = 0; byte_idx < (ETB_PACKET_SIZE - 1); byte_idx++) {
             c = etb_stream->buff[pkt_idx + byte_idx];
-            end = etb_stream->buff[pkt_idx + ETB_PACKET_SIZE - 1];
             if (byte_idx & 1) {
                 /* data byte */
 
@@ -119,7 +119,7 @@ int decode_etb_stream(struct stream *etb_stream)
                     }
                 } else {
                     /* data byte */
-                    c = (c >> 1) & 0x7f;
+                    c |= (end & (1 << (byte_idx / 2)))? 1: 0;
                     if (cur_id < 0) {
                         /* drop the byte since there is no ID byte yet */
                         continue;
