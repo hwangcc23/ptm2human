@@ -35,7 +35,7 @@ static int init_stream(struct stream *stream, int buff_len, \
 int decode_etb_stream(struct stream *etb_stream)
 {
     struct stream *stream;
-    int nr_stream, pkt_idx, byte_idx, id, cur_id, pre_id, nr_new, i, unused_pkt = 0;
+    int nr_stream, pkt_idx, byte_idx, id, cur_id, pre_id, nr_new, i, trace_stop = 0;
     unsigned char c, end, tmp;
 
     if (!etb_stream) {
@@ -58,18 +58,14 @@ int decode_etb_stream(struct stream *etb_stream)
     }
 
     for (pkt_idx = 0; pkt_idx < etb_stream->buff_len; pkt_idx += ETB_PACKET_SIZE) {
+        if (trace_stop) {
+            break;
+        }
         end = etb_stream->buff[pkt_idx + ETB_PACKET_SIZE - 1];
         for (byte_idx = 0; byte_idx < (ETB_PACKET_SIZE - 1); byte_idx++) {
             c = etb_stream->buff[pkt_idx + byte_idx];
             if (byte_idx & 1) {
                 /* data byte */
-
-                if (unused_pkt) {
-                    /* drop the byte since it is unused data packet */
-                    unused_pkt = 0;
-                    continue;
-                }
-
                 tmp = etb_stream->buff[pkt_idx + byte_idx - 1];
                 if ((tmp & 1) &&    /* previous byte is an ID byte */   \
                         end & (1 << (byte_idx / 2))) {
@@ -94,8 +90,8 @@ int decode_etb_stream(struct stream *etb_stream)
                     /* ID byte */
                     id = (c >> 1) & 0x7f;
                     if (id == NULL_TRACE_SOURCE) {
-                        unused_pkt = 1;
-                        continue;
+                        trace_stop = 1;
+                        break;
                     } else {
                         pre_id = cur_id;
                         cur_id = id - 1;
@@ -123,11 +119,6 @@ int decode_etb_stream(struct stream *etb_stream)
                     c |= (end & (1 << (byte_idx / 2)))? 1: 0;
                     if (cur_id < 0) {
                         /* drop the byte since there is no ID byte yet */
-                        continue;
-                    }
-                    if (unused_pkt) {
-                        /* drop the byte since it is unused data packet */
-                        unused_pkt = 0;
                         continue;
                     }
                     stream[cur_id].buff[stream[cur_id].buff_len] = c;
