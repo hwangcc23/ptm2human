@@ -1,8 +1,50 @@
+ptm2human: ptm trace to human-readable format
+=============================================
+
+[About]:
 ptm2human is a decoder for trace data output by Program Trace Macrocells 
 (PTM) [1] as specified by the ARM's Program Flow Trace architecture document [2].
 It deconstructs ID packets and data packets from the formatter of ARM Coresight ETB [3],
 and then translates the trace data to a human-readable format. 
 
+[Usage]:
+1. Save the PTM trace stream into a file.
+2. Give the trace file to ptm2human:
+        $ ptm2human -i /path/to/trace/file -c 4
+   The result is printed to the stdout. Redirect it to a output file:
+        $ ptm2human -i /path/to/trace/file -c 4 1> /path/to/output/file
+3. Read traces in a human-readable format:
+        $ more output.log
+        Reading ptm_trace_stream.o
+        Decode trace stream of ID 0
+        Syncing the trace stream...
+        Decode trace stream of ID 1
+        Syncing the trace stream...
+        Decode trace stream of ID 2
+        Syncing the trace stream...
+        Decode trace stream of ID 3
+        Syncing the trace stream...
+        Decoding the trace stream...
+        instruction addr at 0xc06561ec, ARM state, secure state, context ID 0x163f,
+        timestamp 0x12e6944eb4e,
+        instruction addr at 0xc0656208, ARM state,
+        instruction addr at 0xc00800cc, ARM state,
+        instruction addr at 0xc000ee34, ARM state,
+        instruction addr at 0xc00d4310, ARM state,
+        instruction addr at 0xc00d428c, ARM state,
+        instruction addr at 0xc00d3d10, ARM state,
+        instruction addr at 0xc00d42dc, ARM state,
+        instruction addr at 0xc00d42e8, ARM state,
+        instruction addr at 0xc000ee48, ARM state,
+        instruction addr at 0xc00ae1ac, ARM state,
+        instruction addr at 0xc00ae1cc, ARM state,
+        instruction addr at 0xc0020808, ARM state,
+        instruction addr at 0xc00a59b0, ARM state,
+        instruction addr at 0xc00ae200, ARM state,
+        instruction addr at 0xc00ad954, ARM state,
+        . . . 
+
+[Reference]:
 [1] http://infocenter.arm.com/help/topic/com.arm.doc.ddi0401c/DDI0401C_coresight_ptm_a9_r1p0_trm.pdf
 [2] http://infocenter.arm.com/help/topic/com.arm.doc.ihi0035b/IHI0035B_cs_pft_v1_1_architecture_spec.pdf
 [3] http://infocenter.arm.com/help/topic/com.arm.doc.ddi0314h/DDI0314H_coresight_components_trm.pdf
