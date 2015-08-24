@@ -1,9 +1,11 @@
 #include <stdio.h>
-#include "output.h"
 #include "log.h"
 #include "tracer.h"
 #include "stream.h"
 #include "pktproto.h"
+#include "config.h"
+
+#if TRACE_STREAM_PROT == PFT_TRACE_STREAM
 
 DEF_TRACEPKT(async, 0xff, 0x00);
 DEF_TRACEPKT(isync, 0xff, 0x08);
@@ -428,6 +430,24 @@ DECL_DECODE_FN(ignore)
     return 1;
 }
 
+struct tracepkt *pftpkts[] =
+{
+    &PKT_NAME(async),
+    &PKT_NAME(isync),
+    &PKT_NAME(atom),
+    &PKT_NAME(branch_addr),
+    &PKT_NAME(waypoint_update),
+    &PKT_NAME(trigger),
+    &PKT_NAME(contextid),
+    &PKT_NAME(vmid),
+    &PKT_NAME(timestamp),
+    &PKT_NAME(exception_return),
+    &PKT_NAME(ignore),
+    NULL,
+};
+
+struct tracepkt **tracepkts = pftpkts;
+
 int synchronization(struct stream *stream)
 {
     int i, p;
@@ -448,20 +468,4 @@ int synchronization(struct stream *stream)
     return -1;
 }
 
-struct tracepkt *pftpkts[] =
-{
-    &PKT_NAME(async),
-    &PKT_NAME(isync),
-    &PKT_NAME(atom),
-    &PKT_NAME(branch_addr),
-    &PKT_NAME(waypoint_update),
-    &PKT_NAME(trigger),
-    &PKT_NAME(contextid),
-    &PKT_NAME(vmid),
-    &PKT_NAME(timestamp),
-    &PKT_NAME(exception_return),
-    &PKT_NAME(ignore),
-    NULL,
-};
-
-struct tracepkt **tracepkts = pftpkts;
+#endif

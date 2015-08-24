@@ -1,0 +1,10 @@
+#ifndef _CONFIG_H
+#define _CONFIG_H
+
+#define PFT_TRACE_STREAM 1
+
+#define ETMV4_TRACE_STREAM 4
+
+#define TRACE_STREAM_PROT ETMV4_TRACE_STREAM
+
+#endif
