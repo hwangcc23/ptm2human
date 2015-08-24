@@ -11,7 +11,7 @@ all: ptm2human
 ptm2human: $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS)
 
-%.o: %.c log.h pftproto.h stream.h tracer.h
+%.o: %.c log.h pktproto.h stream.h tracer.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 clean:

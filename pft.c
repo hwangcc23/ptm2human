@@ -3,19 +3,19 @@
 #include "log.h"
 #include "tracer.h"
 #include "stream.h"
-#include "pftproto.h"
+#include "pktproto.h"
 
-DEF_PFTPKT(async, 0xff, 0x00);
-DEF_PFTPKT(isync, 0xff, 0x08);
-DEF_PFTPKT(atom, 0x81, 0x80);
-DEF_PFTPKT(branch_addr, 0x01, 0x01);
-DEF_PFTPKT(waypoint_update, 0xff, 0x72);
-DEF_PFTPKT(trigger, 0xff, 0x0c);
-DEF_PFTPKT(contextid, 0xff, 0x6e);
-DEF_PFTPKT(vmid, 0xff, 0x3c);
-DEF_PFTPKT(timestamp, 0xfb, 0x42);
-DEF_PFTPKT(exception_return, 0xff, 0x76);
-DEF_PFTPKT(ignore, 0xff, 0x66);
+DEF_TRACEPKT(async, 0xff, 0x00);
+DEF_TRACEPKT(isync, 0xff, 0x08);
+DEF_TRACEPKT(atom, 0x81, 0x80);
+DEF_TRACEPKT(branch_addr, 0x01, 0x01);
+DEF_TRACEPKT(waypoint_update, 0xff, 0x72);
+DEF_TRACEPKT(trigger, 0xff, 0x0c);
+DEF_TRACEPKT(contextid, 0xff, 0x6e);
+DEF_TRACEPKT(vmid, 0xff, 0x3c);
+DEF_TRACEPKT(timestamp, 0xfb, 0x42);
+DEF_TRACEPKT(exception_return, 0xff, 0x76);
+DEF_TRACEPKT(ignore, 0xff, 0x66);
 
 DECL_DECODE_FN(async)
 {
@@ -448,7 +448,7 @@ int synchronization(struct stream *stream)
     return -1;
 }
 
-struct pftpkt *pftpkts[] =
+struct tracepkt *pftpkts[] =
 {
     &PKT_NAME(async),
     &PKT_NAME(isync),
@@ -463,3 +463,5 @@ struct pftpkt *pftpkts[] =
     &PKT_NAME(ignore),
     NULL,
 };
+
+struct tracepkt **tracepkts = pftpkts;

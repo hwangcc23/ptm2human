@@ -2,7 +2,7 @@
 #include "log.h"
 #include "tracer.h"
 #include "stream.h"
-#include "pftproto.h"
+#include "pktproto.h"
 
 int decode_stream(struct stream *stream)
 {
@@ -37,22 +37,22 @@ int decode_stream(struct stream *stream)
 
         LOGD("Got a packet header 0x%02x at offset %d\n", c, cur);
 
-        for (i = 0; pftpkts[i]; i++) {
-            if ((c & pftpkts[i]->mask) == pftpkts[i]->val) {
-                LOGD("Get a packet of type %s\n", pftpkts[i]->name);
+        for (i = 0; tracepkts[i]; i++) {
+            if ((c & tracepkts[i]->mask) == tracepkts[i]->val) {
+                LOGD("Get a packet of type %s\n", tracepkts[i]->name);
                 break;
             }
         }
-        if (!pftpkts[i]) {
+        if (!tracepkts[i]) {
             LOGE("Cannot recognize a packet header 0x%02x\n", c);
             LOGE("Proceed on guesswork\n");
             cur++;
             continue;
         }
 
-        ret = pftpkts[i]->decode((const unsigned char *)&(stream->buff[cur]), stream);
+        ret = tracepkts[i]->decode((const unsigned char *)&(stream->buff[cur]), stream);
         if (ret <= 0) {
-            LOGE("Cannot decode a packet of type %s at offset %d\n", pftpkts[i]->name, cur);
+            LOGE("Cannot decode a packet of type %s at offset %d\n", tracepkts[i]->name, cur);
             LOGE("Proceed on guesswork\n");
             cur++;
         } else {

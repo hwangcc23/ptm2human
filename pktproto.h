@@ -1,9 +1,9 @@
-#ifndef _PFTPROTO_H
-#define _PFTPROTO_H
+#ifndef _PKTPROTO_H
+#define _PKTPROTO_H
 
 typedef unsigned char pkt_header;
 
-struct pftpkt 
+struct tracepkt
 {
     const char *name;
     pkt_header mask;
@@ -17,11 +17,11 @@ struct pftpkt
     static int DECODE_FUNC_NAME(__n)(const unsigned char *pkt, struct stream *stream)
 
 #define PKT_NAME(__n) \
-    pftpkt ## __n
+    tracepkt ## __n
 
-#define DEF_PFTPKT(__n, __m, __v)  \
+#define DEF_TRACEPKT(__n, __m, __v)  \
     DECL_DECODE_FN(__n);    \
-    struct pftpkt PKT_NAME(__n) =   \
+    struct tracepkt PKT_NAME(__n) =   \
     {   \
         .name = # __n,  \
         .mask = (__m),  \
@@ -29,10 +29,10 @@ struct pftpkt
         .decode = DECODE_FUNC_NAME(__n),    \
     }
 
-#define PFTPKT(__n) \
-    pftpkt ## __n
+#define TRACEPKT(__n) \
+    tracepkt ## __n
 
-extern struct pftpkt *pftpkts[];
+extern struct tracepkt **tracepkts;
 extern int synchronization(struct stream *stream);
 
 #endif
