@@ -11,9 +11,43 @@ DEF_TRACEPKT(async, 0xff, 0x00);
 
 DECL_DECODE_FN(async)
 {
-    int index;
+    int index, cnt;
 
-    index = -1;
+    index = 1;
+
+    switch (pkt[index]) {
+    case 0:
+        /* async */
+        for (cnt = 0 ; (cnt < 11) & (index < stream->buff_len); cnt++, index++) {
+            if (cnt == 10 && pkt[index] != 0x80)
+                break;
+            if (cnt != 10 && pkt[index] != 0)
+                break;
+        }
+        if (cnt != 11) {
+            LOGE("Payload bytes of async are not correct\n");
+            LOGE("Invalid async packet\n");
+            return -1;
+        }
+        LOGD("[async]\n");
+        break;
+
+    case 3:
+        /* discard */
+        index = -1;
+        break;
+
+    case 5:
+        /* overflow */
+        index = -1;
+        break;
+
+    default:
+        LOGE("First payload byte of async is not correct\n");
+        LOGE("Invalid async packet\n");
+        index = -1;
+        break;
+    }
 
     return index;
 }
