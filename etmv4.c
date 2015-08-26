@@ -7,9 +7,10 @@
 
 #if TRACE_STREAM_PROT == ETMV4_TRACE_STREAM
 
-DEF_TRACEPKT(async, 0xff, 0x00);
+DEF_TRACEPKT(extension, 0xff, 0x00);
+DEF_TRACEPKT(trace_info, 0xff, 0x01);
 
-DECL_DECODE_FN(async)
+DECL_DECODE_FN(extension)
 {
     int index, cnt;
 
@@ -30,16 +31,24 @@ DECL_DECODE_FN(async)
             return -1;
         }
         LOGD("[async]\n");
+
+        /* SYNCING -> INSYNC */
+        stream->state++;
+
         break;
 
     case 3:
         /* discard */
-        index = -1;
+        index++;
+        LOGD("[discard]\n");
+        /* TODO: add tracer function */
         break;
 
     case 5:
         /* overflow */
-        index = -1;
+        index++;
+        LOGD("[overflow]\n");
+        /* TODO: add tracer function */
         break;
 
     default:
@@ -52,9 +61,15 @@ DECL_DECODE_FN(async)
     return index;
 }
 
+DECL_DECODE_FN(trace_info)
+{
+    return -1;
+}
+
 struct tracepkt *etmv4pkts[] =
 {
-    &PKT_NAME(async),
+    &PKT_NAME(extension),
+    &PKT_NAME(trace_info),
     NULL,
 };
 
@@ -67,11 +82,9 @@ int synchronization(struct stream *stream)
 
     for (i = 0; i < stream->buff_len; i++) {
         c = stream->buff[i];
-        if ((c & PKT_NAME(async).mask) == PKT_NAME(async).val) {
-            p = DECODE_FUNC_NAME(async)((const unsigned char *)&(stream->buff[i]), stream);
-            if (p > 0) {
-                /* SYNCING -> INSYNC */
-                stream->state++;
+        if ((c & PKT_NAME(extension).mask) == PKT_NAME(extension).val) {
+            p = DECODE_FUNC_NAME(extension)((const unsigned char *)&(stream->buff[i]), stream);
+            if ((p > 0) && (stream->state >= INSYNC)) {
                 return i;
             }
         }
