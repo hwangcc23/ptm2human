@@ -9,6 +9,7 @@
 
 DEF_TRACEPKT(extension, 0xff, 0x00);
 DEF_TRACEPKT(trace_info, 0xff, 0x01);
+DEF_TRACEPKT(trace_on, 0xff, 0x04);
 
 DECL_DECODE_FN(extension)
 {
@@ -76,7 +77,7 @@ DECL_DECODE_FN(trace_info)
         LOGE("More than 1 PLCTL field in the trace info packet\n");
         return -1;
     } else {
-        LOGD("[traceinfo] plctl = 0x%X\n", plctl);
+        LOGD("[trace info] plctl = 0x%X\n", plctl);
     }
 
     if (plctl & 1) {
@@ -93,7 +94,7 @@ DECL_DECODE_FN(trace_info)
             LOGE("More than 1 INFO field in the trace info packet\n");
             return -1;
         } else {
-            LOGD("[traceinfo] info = 0x%X\n", info);
+            LOGD("[trace info] info = 0x%X\n", info);
         }
     }
 
@@ -111,7 +112,7 @@ DECL_DECODE_FN(trace_info)
             LOGE("More than 4 KEY fields in the trace info packet\n");
             return -1;
         } else {
-            LOGD("[traceinfo] key = 0x%X\n", key);
+            LOGD("[trace info] key = 0x%X\n", key);
         }
     }
 
@@ -129,7 +130,7 @@ DECL_DECODE_FN(trace_info)
             LOGE("More than 4 SPEC fields in the trace info packet\n");
             return -1;
         } else {
-            LOGD("[traceinfo] curr_spec_depth = 0x%X\n", spec);
+            LOGD("[trace info] curr_spec_depth = 0x%X\n", spec);
         }
     }
 
@@ -146,17 +147,24 @@ DECL_DECODE_FN(trace_info)
             LOGE("More than 2 CYCT fields in the trace info packet\n");
             return -1;
         } else {
-            LOGD("[traceinfo] cc_thresold = 0x%X\n", cyct);
+            LOGD("[trace info] cc_thresold = 0x%X\n", cyct);
         }
     }
 
     return index;
 }
 
+DECL_DECODE_FN(trace_on)
+{
+    LOGD("[trace on]\n");
+    return 1;
+}
+
 struct tracepkt *etmv4pkts[] =
 {
     &PKT_NAME(extension),
     &PKT_NAME(trace_info),
+    &PKT_NAME(trace_on),
     NULL,
 };
 
@@ -167,6 +175,7 @@ int synchronization(struct stream *stream)
     int i, p;
     unsigned char c;
 
+    /* locate an async packet and search for a trace-info packet */
     for (i = 0; i < stream->buff_len; i++) {
         c = stream->buff[i];
         if ((c & PKT_NAME(extension).mask) == PKT_NAME(extension).val) {
