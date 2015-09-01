@@ -96,6 +96,9 @@ DECL_DECODE_FN(trace_info)
         } else {
             LOGD("[trace info] info = 0x%X\n", info);
         }
+        TRACE_INFO(stream) = info;
+    } else {
+        TRACE_INFO(stream) = 0;
     }
 
     if (plctl & 2) {
@@ -132,6 +135,9 @@ DECL_DECODE_FN(trace_info)
         } else {
             LOGD("[trace info] curr_spec_depth = 0x%X\n", spec);
         }
+        CURR_SPEC_DEPTH(stream) = spec;
+    } else {
+        CURR_SPEC_DEPTH(stream) = 0;
     }
 
     if (plctl & 8) {
@@ -149,6 +155,9 @@ DECL_DECODE_FN(trace_info)
         } else {
             LOGD("[trace info] cc_thresold = 0x%X\n", cyct);
         }
+        CC_THRESHOLD(stream) = cyct;
+    } else {
+        CC_THRESHOLD(stream) = 0;
     }
 
     return index;

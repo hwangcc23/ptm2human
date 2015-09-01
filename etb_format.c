@@ -20,8 +20,8 @@ static int init_stream(struct stream *stream, int buff_len, \
 
     memset(stream, 0, sizeof(struct stream));
 
-    stream->cycle_accurate = cycle_accurate;
-    stream->contextid_size = contextid_size;
+    IS_CYC_ACC_STREAM(stream) = cycle_accurate;
+    CONTEXTID_SIZE(stream) = contextid_size;
     stream->buff = malloc(buff_len);
     if (!(stream->buff)) {
         LOGE("Fail to allocate memory (%s)\n", strerror(errno));
@@ -53,7 +53,7 @@ int decode_etb_stream(struct stream *etb_stream)
         return -1;
     }
     if (init_stream(stream, etb_stream->buff_len,
-            etb_stream->cycle_accurate, etb_stream->contextid_size)) {
+            IS_CYC_ACC_STREAM(etb_stream), CONTEXTID_SIZE(etb_stream))) {
         return -1;
     }
 
@@ -108,7 +108,7 @@ int decode_etb_stream(struct stream *etb_stream)
                         }
                         for (i = (nr_stream - nr_new); i < nr_stream; i++) {
                             if (init_stream(&(stream[i]), etb_stream->buff_len, \
-                                    etb_stream->cycle_accurate, etb_stream->contextid_size)) {
+                                    IS_CYC_ACC_STREAM(etb_stream), CONTEXTID_SIZE(etb_stream))) {
                                 LOGE("Fail to init stream %d\n", i);
                                 return -1;
                             }

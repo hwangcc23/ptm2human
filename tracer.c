@@ -40,10 +40,10 @@ void tracer_sync(struct tracer *tracer, unsigned int addr, int inst_state, unsig
     }
     OUTPUT("%s, ", (info & 0x08)? "non-secure state": "secure state");
 
-    if ((stream_of_tracer(tracer))->cycle_accurate) {
+    if (IS_CYC_ACC_STREAM(stream_of_tracer(tracer))) {
         OUTPUT("cycle count 0x%08x, ", cyc_cnt);
     }
-    if ((stream_of_tracer(tracer))->contextid_size) {
+    if (CONTEXTID_SIZE(stream_of_tracer(tracer))) {
         OUTPUT("context ID 0x%x, ", contextid);
     }
     OUTPUT("\n"); 
@@ -138,7 +138,7 @@ void tracer_branch(struct tracer *tracer, unsigned int addr, int addr_size, \
             OUTPUT("into Hyp mode, ");
         }
     }
-    if ((stream_of_tracer(tracer))->cycle_accurate) {
+    if (IS_CYC_ACC_STREAM(stream_of_tracer(tracer))) {
         OUTPUT("cycle count 0x%08x, ", cyc_cnt);
     }
     OUTPUT("\n");
@@ -184,7 +184,7 @@ void tracer_vmid(struct tracer *tracer, unsigned int VMID)
 void tracer_timestamp(struct tracer *tracer, unsigned long long timestamp, unsigned int cyc_cnt)
 {
     OUTPUT("timestamp 0x%llx, ", timestamp);
-    if ((stream_of_tracer(tracer))->cycle_accurate) {
+    if (IS_CYC_ACC_STREAM(stream_of_tracer(tracer))) {
         OUTPUT("cycle count 0x%08x, ", cyc_cnt);
     }
     OUTPUT("\n");

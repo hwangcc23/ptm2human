@@ -83,11 +83,11 @@ int main(int argc, char **argv)
             break;
 
         case 'c':
-            stream.contextid_size = atoi(optarg);
+            CONTEXTID_SIZE(&stream) = atoi(optarg);
             break;
 
         case 'C':
-            stream.cycle_accurate = 1;
+            IS_CYC_ACC_STREAM(&stream) = 1;
             break;
 
         case 'h':
@@ -108,14 +108,14 @@ int main(int argc, char **argv)
     }
 
     /* validate context ID size */
-    switch (stream.contextid_size) {
+    switch (CONTEXTID_SIZE(&stream)) {
     case 0:
     case 1:
     case 2:
     case 4:
         break;
     default:
-        LOGE("Invalid context ID size %d\n", stream.contextid_size);
+        LOGE("Invalid context ID size %d\n", CONTEXTID_SIZE(&stream));
         return EXIT_FAILURE;
         break;
     }
