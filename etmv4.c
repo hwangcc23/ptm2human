@@ -10,6 +10,7 @@
 DEF_TRACEPKT(extension, 0xff, 0x00);
 DEF_TRACEPKT(trace_info, 0xff, 0x01);
 DEF_TRACEPKT(trace_on, 0xff, 0x04);
+DEF_TRACEPKT(timestamp, 0xff, 0x02);
 
 DECL_DECODE_FN(extension)
 {
@@ -169,11 +170,46 @@ DECL_DECODE_FN(trace_on)
     return 1;
 }
 
+DECL_DECODE_FN(timestamp)
+{
+    int index, i;
+    unsigned long long ts = 0;
+    unsigned char data;
+    const unsigned char c_bit = 0x80;
+    unsigned int count = 0;
+
+    for (index = 1, i = 0; index < 10; index++, i++) {
+        data = pkt[index];
+        ts |= (data & ~c_bit) << (7 * i);
+        if ((index != 9) && !(data & c_bit)) {
+            break;
+        }
+    }
+
+    if (pkt[0] & 1) {
+        /* cycle count section is present since the N bit in the header is 1'b1 */
+        for (i = 0; i < 3; index++, i++) {
+            data = pkt[index];
+            count |= (data & ~c_bit) << (7 * i);
+            if (!(data & c_bit)) {
+                break;
+            }
+        }
+    }
+
+    LOGD("[timestemp] timestamp = %llu, cycle count = %d\n", ts, count);
+
+    /* TODO: add trace function */
+
+    return index;
+}
+
 struct tracepkt *etmv4pkts[] =
 {
     &PKT_NAME(extension),
     &PKT_NAME(trace_info),
     &PKT_NAME(trace_on),
+    &PKT_NAME(timestamp),
     NULL,
 };
 
