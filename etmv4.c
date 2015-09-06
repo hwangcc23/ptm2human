@@ -11,6 +11,7 @@ DEF_TRACEPKT(extension, 0xff, 0x00);
 DEF_TRACEPKT(trace_info, 0xff, 0x01);
 DEF_TRACEPKT(trace_on, 0xff, 0x04);
 DEF_TRACEPKT(timestamp, 0xff, 0x02);
+DEF_TRACEPKT(exception, 0xff, 0x06);
 
 DECL_DECODE_FN(extension)
 {
@@ -204,12 +205,41 @@ DECL_DECODE_FN(timestamp)
     return index;
 }
 
+DECL_DECODE_FN(exception)
+{
+    int index = 0;
+    unsigned char data1, data2 = 0;
+    const unsigned char c_bit = 0x80;
+
+    if (pkt[index++] & 1) {
+        /* exception return packet */
+        LOGD("[exception return]\n");
+    } else {
+        /* exception patcket */
+        data1 = pkt[index++];
+        if (data1 & c_bit) {
+            data2 = pkt[index++];
+        }
+        LOGD("[exception] E1:E0 = %d, TYPE = 0x%02X, P = %d\n",
+                ((data1 & 0x40) >> 5) | (data1 & 0x01),
+                ((data1 & 0x3E) >> 1) | (data2 & 0x1F),
+                (data2 & 0x20) >> 5);
+
+        /* TODO: add decoding for the address packet */
+    }
+
+    /* TODO: add trace function */
+
+    return index;
+}
+
 struct tracepkt *etmv4pkts[] =
 {
     &PKT_NAME(extension),
     &PKT_NAME(trace_info),
     &PKT_NAME(trace_on),
     &PKT_NAME(timestamp),
+    &PKT_NAME(exception),
     NULL,
 };
 
