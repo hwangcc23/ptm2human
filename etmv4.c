@@ -12,6 +12,9 @@ DEF_TRACEPKT(trace_info, 0xff, 0x01);
 DEF_TRACEPKT(trace_on, 0xff, 0x04);
 DEF_TRACEPKT(timestamp, 0xfe, 0x02);
 DEF_TRACEPKT(exception, 0xfe, 0x06);
+DEF_TRACEPKT(cc_format_1, 0xfe, 0x0e);
+DEF_TRACEPKT(cc_format_2, 0xfe, 0x0c);
+DEF_TRACEPKT(cc_format_3, 0xf0, 0x10);
 
 DECL_DECODE_FN(extension)
 {
@@ -233,6 +236,70 @@ DECL_DECODE_FN(exception)
     return index;
 }
 
+DECL_DECODE_FN(cc_format_1)
+{
+    int index = 0, i;
+    int u_bit = pkt[index++];
+    unsigned char data;
+    const unsigned char c_bit = 0x80;
+    unsigned int commit = 0, count = 0;
+
+    /* FIXME: need to get TRCIDR0.COMMOPT */
+    if (1) {
+        for (i = 0; i < 4; i++, index++) {
+            data = pkt[index];
+            commit |= (data & ~c_bit) << (7 * i);
+            if (!(c_bit)) {
+                break;
+            }
+        }
+        if (i >= 4) {
+            LOGE("More than 4 bytes of the commit section in the cycle count format 1 packet");
+            return -1;
+        }
+    }
+
+    if (!u_bit) {
+        for (i = 0; i < 3; i++, index++) {
+            data = pkt[index];
+            count |= (data & ~c_bit) << (7 * i);
+            if (!(c_bit)) {
+                break;
+            }
+        }
+        if (i >= 3) {
+            LOGE("More than 3 bytes of the cycle count section in the cycle count format 1 packet");
+            return -1;
+        }
+    }
+
+    LOGD("[cycle count format 1] U = %d, COMMIT = %d, COUNT = %d\n", u_bit, commit, count);
+
+    /* TODO: add trace function */
+
+    return index;
+}
+
+DECL_DECODE_FN(cc_format_2)
+{
+    LOGD("[cycle count format 2] F = %d, AAAA = %d, BBBB = %x\n",
+            pkt[0] & 0x01,
+            (pkt[1] & 0xf0) >> 4, (pkt[1] & 0x0f));
+
+    /* TODO: add trace function */
+
+    return 2;
+}
+
+DECL_DECODE_FN(cc_format_3)
+{
+    LOGD("[cycle count format 3] AA = %d, BB = %x\n", (pkt[0] & 0x0c) >> 2, (pkt[0] & 0x03));
+
+    /* TODO: add trace function */
+
+    return 1;
+}
+
 struct tracepkt *etmv4pkts[] =
 {
     &PKT_NAME(extension),
@@ -240,6 +307,9 @@ struct tracepkt *etmv4pkts[] =
     &PKT_NAME(trace_on),
     &PKT_NAME(timestamp),
     &PKT_NAME(exception),
+    &PKT_NAME(cc_format_1),
+    &PKT_NAME(cc_format_2),
+    &PKT_NAME(cc_format_3),
     NULL,
 };
 
