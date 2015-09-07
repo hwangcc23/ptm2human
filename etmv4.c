@@ -15,6 +15,7 @@ DEF_TRACEPKT(exception, 0xfe, 0x06);
 DEF_TRACEPKT(cc_format_1, 0xfe, 0x0e);
 DEF_TRACEPKT(cc_format_2, 0xfe, 0x0c);
 DEF_TRACEPKT(cc_format_3, 0xf0, 0x10);
+DEF_TRACEPKT(data_sync_marker, 0xf0, 0x20);
 
 DECL_DECODE_FN(extension)
 {
@@ -300,6 +301,19 @@ DECL_DECODE_FN(cc_format_3)
     return 1;
 }
 
+DECL_DECODE_FN(data_sync_marker)
+{
+    if (pkt[0] & 0x08) {
+        /* unnumbered data synchronization marker */
+        LOGD("[unnumbered data sync maker] A = %d\n", pkt[0] & 0x07);
+    } else {
+        /* Numbered data synchronization marker */
+        LOGD("[numbered data sync maker] NUM = %d\n", pkt[0] & 0x07);
+    }
+
+    return 1;
+}
+
 struct tracepkt *etmv4pkts[] =
 {
     &PKT_NAME(extension),
@@ -310,6 +324,7 @@ struct tracepkt *etmv4pkts[] =
     &PKT_NAME(cc_format_1),
     &PKT_NAME(cc_format_2),
     &PKT_NAME(cc_format_3),
+    &PKT_NAME(data_sync_marker),
     NULL,
 };
 
