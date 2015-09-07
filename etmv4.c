@@ -10,8 +10,8 @@
 DEF_TRACEPKT(extension, 0xff, 0x00);
 DEF_TRACEPKT(trace_info, 0xff, 0x01);
 DEF_TRACEPKT(trace_on, 0xff, 0x04);
-DEF_TRACEPKT(timestamp, 0xff, 0x02);
-DEF_TRACEPKT(exception, 0xff, 0x06);
+DEF_TRACEPKT(timestamp, 0xfe, 0x02);
+DEF_TRACEPKT(exception, 0xfe, 0x06);
 
 DECL_DECODE_FN(extension)
 {
