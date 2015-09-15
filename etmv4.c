@@ -16,6 +16,7 @@ DEF_TRACEPKT(cc_format_1, 0xfe, 0x0e);
 DEF_TRACEPKT(cc_format_2, 0xfe, 0x0c);
 DEF_TRACEPKT(cc_format_3, 0xf0, 0x10);
 DEF_TRACEPKT(data_sync_marker, 0xf0, 0x20);
+DEF_TRACEPKT(commit, 0xff, 0x2d);
 
 DECL_DECODE_FN(extension)
 {
@@ -250,7 +251,7 @@ DECL_DECODE_FN(cc_format_1)
         for (i = 0; i < 4; i++, index++) {
             data = pkt[index];
             commit |= (data & ~c_bit) << (7 * i);
-            if (!(c_bit)) {
+            if (!(data & c_bit)) {
                 break;
             }
         }
@@ -264,7 +265,7 @@ DECL_DECODE_FN(cc_format_1)
         for (i = 0; i < 3; i++, index++) {
             data = pkt[index];
             count |= (data & ~c_bit) << (7 * i);
-            if (!(c_bit)) {
+            if (!(data & c_bit)) {
                 break;
             }
         }
@@ -314,6 +315,28 @@ DECL_DECODE_FN(data_sync_marker)
     return 1;
 }
 
+DECL_DECODE_FN(commit)
+{
+    int index, i;
+    unsigned char data;
+    unsigned int commit = 0;
+    const unsigned char c_bit = 0x80;
+
+    for (index = 1, i = 0; i < 4; index++, i++) {
+        data = pkt[index];
+        commit |= (data & ~c_bit) << (7 * i);
+        if (!(data & c_bit)) {
+            break;
+        }
+    }
+    if (i >= 4) {
+        LOGE("More than 4 bytes of the commit section in the commit packet");
+        return -1;
+    }
+
+    return index;
+}
+
 struct tracepkt *etmv4pkts[] =
 {
     &PKT_NAME(extension),
@@ -325,6 +348,7 @@ struct tracepkt *etmv4pkts[] =
     &PKT_NAME(cc_format_2),
     &PKT_NAME(cc_format_3),
     &PKT_NAME(data_sync_marker),
+    &PKT_NAME(commit),
     NULL,
 };
 
