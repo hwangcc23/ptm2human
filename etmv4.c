@@ -22,6 +22,7 @@ DEF_TRACEPKT(commit, 0xff, 0x2d);
 DEF_TRACEPKT(cancel_format_1, 0xfe, 0x2e);
 DEF_TRACEPKT(cancel_format_2, 0xfc, 0x34);
 DEF_TRACEPKT(cancel_format_3, 0xf8, 0x38);
+DEF_TRACEPKT(mispredict, 0xfc, 0x30);
 
 DECL_DECODE_FN(extension)
 {
@@ -390,6 +391,15 @@ DECL_DECODE_FN(cancel_format_3)
     return decode_cancel(pkt, stream);
 }
 
+DECL_DECODE_FN(mispredict)
+{
+    LOGD("[mispredict] A = %d\n", pkt[0] & 0x03);
+
+    /* TODO: add trace function */
+
+    return 1;
+}
+
 struct tracepkt *etmv4pkts[] =
 {
     &PKT_NAME(extension),
@@ -405,6 +415,7 @@ struct tracepkt *etmv4pkts[] =
     &PKT_NAME(cancel_format_1),
     &PKT_NAME(cancel_format_2),
     &PKT_NAME(cancel_format_3),
+    &PKT_NAME(mispredict),
     NULL,
 };
 
