@@ -7,6 +7,8 @@
 
 #if TRACE_STREAM_PROT == ETMV4_TRACE_STREAM
 
+static const unsigned char c_bit = 0x80;
+
 DEF_TRACEPKT(extension, 0xff, 0x00);
 DEF_TRACEPKT(trace_info, 0xff, 0x01);
 DEF_TRACEPKT(trace_on, 0xff, 0x04);
@@ -17,6 +19,9 @@ DEF_TRACEPKT(cc_format_2, 0xfe, 0x0c);
 DEF_TRACEPKT(cc_format_3, 0xf0, 0x10);
 DEF_TRACEPKT(data_sync_marker, 0xf0, 0x20);
 DEF_TRACEPKT(commit, 0xff, 0x2d);
+DEF_TRACEPKT(cancel_format_1, 0xfe, 0x2e);
+DEF_TRACEPKT(cancel_format_2, 0xfc, 0x34);
+DEF_TRACEPKT(cancel_format_3, 0xf8, 0x38);
 
 DECL_DECODE_FN(extension)
 {
@@ -69,7 +74,6 @@ DECL_DECODE_FN(trace_info)
 {
     int index = 1, i;
     unsigned int plctl = 0, info = 0, key = 0, spec = 0, cyct = 0;
-    const unsigned char c_bit = 0x80;
     unsigned char data;
 
     for (i = 0; i < 4; i++) {
@@ -181,7 +185,6 @@ DECL_DECODE_FN(timestamp)
     int index, i;
     unsigned long long ts = 0;
     unsigned char data;
-    const unsigned char c_bit = 0x80;
     unsigned int count = 0;
 
     for (index = 1, i = 0; index < 10; index++, i++) {
@@ -214,7 +217,6 @@ DECL_DECODE_FN(exception)
 {
     int index = 0;
     unsigned char data1, data2 = 0;
-    const unsigned char c_bit = 0x80;
 
     if (pkt[index++] & 1) {
         /* exception return packet */
@@ -243,7 +245,6 @@ DECL_DECODE_FN(cc_format_1)
     int index = 0, i;
     int u_bit = pkt[index++];
     unsigned char data;
-    const unsigned char c_bit = 0x80;
     unsigned int commit = 0, count = 0;
 
     /* FIXME: need to get TRCIDR0.COMMOPT */
@@ -320,7 +321,6 @@ DECL_DECODE_FN(commit)
     int index, i;
     unsigned char data;
     unsigned int commit = 0;
-    const unsigned char c_bit = 0x80;
 
     for (index = 1, i = 0; i < 4; index++, i++) {
         data = pkt[index];
@@ -333,8 +333,61 @@ DECL_DECODE_FN(commit)
         LOGE("More than 4 bytes of the commit section in the commit packet");
         return -1;
     }
+    LOGD("[commit] COMMIT = %d\n", commit);
+
+    /* TODO: add trace function */
 
     return index;
+}
+
+DECL_DECODE_FN(cancel)
+{
+    int index = 0, i;
+    unsigned char data;
+    unsigned int cancel = 0;
+
+    if (!(pkt[index] & 0x10)) {
+        /* cancle format 1 */
+        for (index = 1, i = 0; i < 4; index++, i++) {
+            data = pkt[index];
+            cancel |= (data & ~c_bit) << (7 * i);
+            if (!(data & c_bit)) {
+                break;
+            }
+        }
+        if (i >= 4) {
+            LOGE("More than 4 bytes of the cancel section in the cancel format 1 packet");
+            return -1;
+        }
+        LOGD("[cancel format 1] M = %d, CANCEL = %d\n", pkt[0] & 0x01, cancel);
+    } if (!(pkt[index] & 0x80)) {
+        /* cancle format 2 */
+        index++;
+        LOGD("[cancel format 2] A = %d\n", pkt[index] & 0x03);
+    } else {
+        /* cancle format 3 */
+        index++;
+        LOGD("[cancel format 3] CC = %d, A = %d\n", (pkt[index] & 0x06) >> 1, pkt[index] & 0x01);
+    }
+
+    /* TODO: add trace function */
+
+    return index;
+}
+
+DECL_DECODE_FN(cancel_format_1)
+{
+    return decode_cancel(pkt, stream);
+}
+
+DECL_DECODE_FN(cancel_format_2)
+{
+    return decode_cancel(pkt, stream);
+}
+
+DECL_DECODE_FN(cancel_format_3)
+{
+    return decode_cancel(pkt, stream);
 }
 
 struct tracepkt *etmv4pkts[] =
@@ -349,6 +402,9 @@ struct tracepkt *etmv4pkts[] =
     &PKT_NAME(cc_format_3),
     &PKT_NAME(data_sync_marker),
     &PKT_NAME(commit),
+    &PKT_NAME(cancel_format_1),
+    &PKT_NAME(cancel_format_2),
+    &PKT_NAME(cancel_format_3),
     NULL,
 };
 
