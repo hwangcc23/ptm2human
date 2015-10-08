@@ -3,9 +3,6 @@
 #include "tracer.h"
 #include "stream.h"
 #include "pktproto.h"
-#include "config.h"
-
-#if TRACE_STREAM_PROT == PFT_TRACE_STREAM
 
 DEF_TRACEPKT(async, 0xff, 0x00);
 DEF_TRACEPKT(isync, 0xff, 0x08);
@@ -446,9 +443,7 @@ struct tracepkt *pftpkts[] =
     NULL,
 };
 
-struct tracepkt **tracepkts = pftpkts;
-
-int synchronization(struct stream *stream)
+int pft_synchronization(struct stream *stream)
 {
     int i, p;
     unsigned char c;
@@ -468,4 +463,8 @@ int synchronization(struct stream *stream)
     return -1;
 }
 
-#endif
+void use_pft(void)
+{
+    tracepkts = pftpkts;
+    synchronization = pft_synchronization;
+}

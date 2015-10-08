@@ -4,6 +4,9 @@
 #include "stream.h"
 #include "pktproto.h"
 
+struct tracepkt **tracepkts;
+sync_func synchronization;
+
 int decode_stream(struct stream *stream)
 {
     int cur, i, ret;

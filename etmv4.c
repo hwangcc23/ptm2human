@@ -3,9 +3,6 @@
 #include "tracer.h"
 #include "stream.h"
 #include "pktproto.h"
-#include "config.h"
-
-#if TRACE_STREAM_PROT == ETMV4_TRACE_STREAM
 
 static const unsigned char c_bit = 0x80;
 
@@ -419,9 +416,7 @@ struct tracepkt *etmv4pkts[] =
     NULL,
 };
 
-struct tracepkt **tracepkts = etmv4pkts;
-
-int synchronization(struct stream *stream)
+int etmv4_synchronization(struct stream *stream)
 {
     int i, p;
     unsigned char c;
@@ -448,4 +443,8 @@ int synchronization(struct stream *stream)
     return -1;
 }
 
-#endif
+void use_etmv4(void)
+{
+    tracepkts = etmv4pkts;
+    synchronization = etmv4_synchronization;
+}

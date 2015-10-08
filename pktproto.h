@@ -1,6 +1,8 @@
 #ifndef _PKTPROTO_H
 #define _PKTPROTO_H
 
+enum { PKT_TYPE_PFT = 0, PKT_TYPE_ETMV4 };
+
 typedef unsigned char pkt_header;
 
 struct tracepkt
@@ -21,7 +23,7 @@ struct tracepkt
 
 #define DEF_TRACEPKT(__n, __m, __v)  \
     DECL_DECODE_FN(__n);    \
-    struct tracepkt PKT_NAME(__n) =   \
+    static struct tracepkt PKT_NAME(__n) =   \
     {   \
         .name = # __n,  \
         .mask = (__m),  \
@@ -32,7 +34,12 @@ struct tracepkt
 #define TRACEPKT(__n) \
     tracepkt ## __n
 
+typedef int (*sync_func)(struct stream *stream);
+
 extern struct tracepkt **tracepkts;
-extern int synchronization(struct stream *stream);
+extern sync_func synchronization;
+
+void use_etmv4(void);
+void use_pft(void);
 
 #endif

@@ -10,17 +10,20 @@
 #include "log.h"
 #include "tracer.h"
 #include "stream.h"
+#include "pktproto.h"
 
 static const struct option options[] = 
 {
     { "input", 1, 0, 'i' },
     { "context", 1, 0, 'c' },
     { "cycle-accurate", 0, 0, 'C' },
+    { "use-pft", 0, 0, 'p' },
+    { "use-etmv4", 0, 0, 'e' },
     { "help", 0, 0, 'h' },
     { NULL, 0, 0, 0   },
 };
 
-static const char *optstring = "i:c:Ch";
+static const char *optstring = "i:c:Cpeh";
 
 void usage(void)
 {
@@ -29,6 +32,8 @@ void usage(void)
     LOGV("  -i|--input <PTM data stream file>\n");
     LOGV("  -c|--context <context ID size>\n");
     LOGV("  -C|--cycle-accurate\n");
+    LOGV("  -p|--use-pft (default option)\n");
+    LOGV("  -e|--use-etmv4\n");
     LOGV("  -h|--help\n");
 }
 
@@ -64,7 +69,7 @@ int file2buff(const char *input_file, const char *buff, unsigned int buff_len)
 
 int main(int argc, char **argv)
 {
-    int longindex, c, ret;
+    int longindex, c, ret, pkttype = -1;
     const char *input_file = NULL;
     struct stream stream;
     struct stat sb;
@@ -88,6 +93,26 @@ int main(int argc, char **argv)
 
         case 'C':
             IS_CYC_ACC_STREAM(&stream) = 1;
+            break;
+
+        case 'p':
+            if (pkttype == -1) {
+                pkttype = PKT_TYPE_PFT;
+                use_pft();
+            } else {
+                LOGE("Use either --use_pft or --use_etmv4\n");
+                return EXIT_FAILURE;
+            }
+            break;
+
+        case 'e':
+            if (pkttype == -1) {
+                pkttype = PKT_TYPE_ETMV4;
+                use_etmv4();
+            } else {
+                LOGE("Use either --use_pft or --use_etmv4\n");
+                return EXIT_FAILURE;
+            }
             break;
 
         case 'h':
