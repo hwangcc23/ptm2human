@@ -20,6 +20,9 @@ DEF_TRACEPKT(cancel_format_1, 0xfe, 0x2e);
 DEF_TRACEPKT(cancel_format_2, 0xfc, 0x34);
 DEF_TRACEPKT(cancel_format_3, 0xf8, 0x38);
 DEF_TRACEPKT(mispredict, 0xfc, 0x30);
+DEF_TRACEPKT(cond_inst_format_1, 0xff, 0x6c);
+DEF_TRACEPKT(cond_inst_format_2, 0xfc, 0x40);
+DEF_TRACEPKT(cond_inst_format_3, 0xff, 0x6d);
 
 DECL_DECODE_FN(extension)
 {
@@ -397,6 +400,55 @@ DECL_DECODE_FN(mispredict)
     return 1;
 }
 
+DECL_DECODE_FN(cond_inst_format_1)
+{
+    int index, i;
+    unsigned char data;
+    unsigned int key = 0;
+
+    for (index = 1, i = 0; i < 4; index++, i++) {
+        data = pkt[index];
+        key |= (data & ~c_bit) << (7 * i);
+        if (!(data & c_bit)) {
+            break;
+        }
+    }
+    if (i >= 4) {
+        LOGE("More than 4 bytes of the commit section in the commit packet");
+        return -1;
+    }
+    LOGD("[conditional instruction format 1] key = %d\n", key);
+
+    /* TODO: add trace function */
+
+    return index;
+}
+
+DECL_DECODE_FN(cond_inst_format_2)
+{
+    int ci;
+
+    ci = pkt[0] & 0x03;
+    LOGD("[conditional instruction format 2] ci = %d\n", ci);
+
+    /* TODO: add trace function */
+
+    return 1;
+}
+
+DECL_DECODE_FN(cond_inst_format_3)
+{
+    int z, num;
+
+    z = pkt[1] & 0x01;
+    num = (pkt[1] & 0x7E) >> 1;
+    LOGD("[conditional instruction format 3] z = %d, num = %d\n", z, num);
+
+    /* TODO: add trace function */
+
+    return 2;
+}
+
 struct tracepkt *etmv4pkts[] =
 {
     &PKT_NAME(extension),
@@ -413,6 +465,9 @@ struct tracepkt *etmv4pkts[] =
     &PKT_NAME(cancel_format_2),
     &PKT_NAME(cancel_format_3),
     &PKT_NAME(mispredict),
+    &PKT_NAME(cond_inst_format_1),
+    &PKT_NAME(cond_inst_format_2),
+    &PKT_NAME(cond_inst_format_3),
     NULL,
 };
 
