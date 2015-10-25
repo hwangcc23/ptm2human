@@ -23,6 +23,7 @@ DEF_TRACEPKT(mispredict, 0xfc, 0x30);
 DEF_TRACEPKT(cond_inst_format_1, 0xff, 0x6c);
 DEF_TRACEPKT(cond_inst_format_2, 0xfc, 0x40);
 DEF_TRACEPKT(cond_inst_format_3, 0xff, 0x6d);
+DEF_TRACEPKT(cond_flush, 0xff, 0x43);
 
 DECL_DECODE_FN(extension)
 {
@@ -449,6 +450,15 @@ DECL_DECODE_FN(cond_inst_format_3)
     return 2;
 }
 
+DECL_DECODE_FN(cond_flush)
+{
+    LOGD("[conditional flush]\n");
+
+    /* TODO: add trace function */
+
+    return 1;
+}
+
 struct tracepkt *etmv4pkts[] =
 {
     &PKT_NAME(extension),
@@ -468,6 +478,7 @@ struct tracepkt *etmv4pkts[] =
     &PKT_NAME(cond_inst_format_1),
     &PKT_NAME(cond_inst_format_2),
     &PKT_NAME(cond_inst_format_3),
+    &PKT_NAME(cond_flush),
     NULL,
 };
 
