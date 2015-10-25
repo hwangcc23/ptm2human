@@ -24,6 +24,7 @@ DEF_TRACEPKT(cond_inst_format_1, 0xff, 0x6c);
 DEF_TRACEPKT(cond_inst_format_2, 0xfc, 0x40);
 DEF_TRACEPKT(cond_inst_format_3, 0xff, 0x6d);
 DEF_TRACEPKT(cond_flush, 0xff, 0x43);
+DEF_TRACEPKT(cond_result_format_1, 0xf8, 0x68);
 
 DECL_DECODE_FN(extension)
 {
@@ -459,6 +460,38 @@ DECL_DECODE_FN(cond_flush)
     return 1;
 }
 
+DECL_DECODE_FN(cond_result_format_1)
+{
+    int index = 0, nr_payloads, payload, i;
+    unsigned char data;
+    unsigned int result[2], key[2];
+
+    nr_payloads = (pkt[index++] & 0x4)? 1: 2;
+
+    for (payload = 0; payload < nr_payloads; payload++) {
+        result[payload] = pkt[index] & 0x0f;
+        key[payload] = (pkt[index] >> 4) & 0x7;
+        for (index++, i = 0; i < 5; index++, i++) {
+            data = pkt[index];
+            key[payload] |= (data & ~c_bit) << (7 * i + 3);
+            if (!(data & c_bit)) {
+                index++;
+                break;
+            }
+        }
+        if (i >= 5) {
+            LOGE("More than 5 payload bytes in the conditional result format 1 packet");
+            return -1;
+        }
+        LOGD("[conditional result format 1] ci[%d] = %d, result[%d] = 0x%X, key[%d] = %d\n",
+                payload, (payload == 0)? (pkt[0] & 0x1): ((pkt[1] & 0x2) >> 1),
+                payload, result[payload],
+                payload, key[payload]);
+    }
+
+    return index;
+}
+
 struct tracepkt *etmv4pkts[] =
 {
     &PKT_NAME(extension),
@@ -479,6 +512,7 @@ struct tracepkt *etmv4pkts[] =
     &PKT_NAME(cond_inst_format_2),
     &PKT_NAME(cond_inst_format_3),
     &PKT_NAME(cond_flush),
+    &PKT_NAME(cond_result_format_1),
     NULL,
 };
 
