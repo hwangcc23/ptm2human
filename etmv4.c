@@ -190,8 +190,8 @@ DECL_DECODE_FN(timestamp)
     unsigned char data;
     unsigned int count = 0;
 
-    for (index = 1, i = 0; index < 10; index++, i++) {
-        data = pkt[index];
+    for (index = 1, i = 0; index < 10; i++) {
+        data = pkt[index++];
         ts |= (data & ~c_bit) << (7 * i);
         if ((index != 9) && !(data & c_bit)) {
             break;
@@ -200,8 +200,8 @@ DECL_DECODE_FN(timestamp)
 
     if (pkt[0] & 1) {
         /* cycle count section is present since the N bit in the header is 1'b1 */
-        for (i = 0; i < 3; index++, i++) {
-            data = pkt[index];
+        for (i = 0; i < 3; i++) {
+            data = pkt[index++];
             count |= (data & ~c_bit) << (7 * i);
             if (!(data & c_bit)) {
                 break;
@@ -252,8 +252,8 @@ DECL_DECODE_FN(cc_format_1)
 
     /* FIXME: need to get TRCIDR0.COMMOPT */
     if (1) {
-        for (i = 0; i < 4; i++, index++) {
-            data = pkt[index];
+        for (i = 0; i < 4; i++) {
+            data = pkt[index++];
             commit |= (data & ~c_bit) << (7 * i);
             if (!(data & c_bit)) {
                 break;
@@ -266,8 +266,8 @@ DECL_DECODE_FN(cc_format_1)
     }
 
     if (!u_bit) {
-        for (i = 0; i < 3; i++, index++) {
-            data = pkt[index];
+        for (i = 0; i < 3; i++) {
+            data = pkt[index++];
             count |= (data & ~c_bit) << (7 * i);
             if (!(data & c_bit)) {
                 break;
@@ -325,8 +325,8 @@ DECL_DECODE_FN(commit)
     unsigned char data;
     unsigned int commit = 0;
 
-    for (index = 1, i = 0; i < 4; index++, i++) {
-        data = pkt[index];
+    for (index = 1, i = 0; i < 4; i++) {
+        data = pkt[index++];
         commit |= (data & ~c_bit) << (7 * i);
         if (!(data & c_bit)) {
             break;
@@ -351,8 +351,8 @@ DECL_DECODE_FN(cancel)
 
     if (!(pkt[index] & 0x10)) {
         /* cancle format 1 */
-        for (index = 1, i = 0; i < 4; index++, i++) {
-            data = pkt[index];
+        for (index = 1, i = 0; i < 4; i++) {
+            data = pkt[index++];
             cancel |= (data & ~c_bit) << (7 * i);
             if (!(data & c_bit)) {
                 break;
@@ -408,8 +408,8 @@ DECL_DECODE_FN(cond_inst_format_1)
     unsigned char data;
     unsigned int key = 0;
 
-    for (index = 1, i = 0; i < 4; index++, i++) {
-        data = pkt[index];
+    for (index = 1, i = 0; i < 4; i++) {
+        data = pkt[index++];
         key |= (data & ~c_bit) << (7 * i);
         if (!(data & c_bit)) {
             break;
@@ -471,11 +471,10 @@ DECL_DECODE_FN(cond_result_format_1)
     for (payload = 0; payload < nr_payloads; payload++) {
         result[payload] = pkt[index] & 0x0f;
         key[payload] = (pkt[index] >> 4) & 0x7;
-        for (index++, i = 0; i < 5; index++, i++) {
-            data = pkt[index];
+        for (index++, i = 0; i < 5; i++) {
+            data = pkt[index++];
             key[payload] |= (data & ~c_bit) << (7 * i + 3);
             if (!(data & c_bit)) {
-                index++;
                 break;
             }
         }
