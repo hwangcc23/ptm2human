@@ -25,6 +25,9 @@ DEF_TRACEPKT(cond_inst_format_2, 0xfc, 0x40);
 DEF_TRACEPKT(cond_inst_format_3, 0xff, 0x6d);
 DEF_TRACEPKT(cond_flush, 0xff, 0x43);
 DEF_TRACEPKT(cond_result_format_1, 0xf8, 0x68);
+DEF_TRACEPKT(cond_result_format_2, 0xf8, 0x48);
+DEF_TRACEPKT(cond_result_format_3, 0xf0, 0x50);
+DEF_TRACEPKT(cond_result_format_4, 0xfc, 0x44);
 
 DECL_DECODE_FN(extension)
 {
@@ -488,7 +491,40 @@ DECL_DECODE_FN(cond_result_format_1)
                 payload, key[payload]);
     }
 
+    /* TODO: add trace function */
+
     return index;
+}
+
+DECL_DECODE_FN(cond_result_format_2)
+{
+    LOGD("[conditional result format 2] k = %d, t = 0x%X\n",
+            (pkt[0] >> 2) & 0x1,
+            (pkt[0] & 0x3));
+
+    /* TODO: add trace function */
+
+    return 1;
+}
+
+DECL_DECODE_FN(cond_result_format_3)
+{
+    LOGD("[conditional result format 3] token = 0x%X\n",
+            pkt[1] | ((pkt[0] & 0x0F) << 8));
+
+    /* TODO: add trace function */
+
+    return 2;
+}
+
+DECL_DECODE_FN(cond_result_format_4)
+{
+    LOGD("[conditional result format 4] t = 0x%X\n",
+            (pkt[0] & 0x3));
+
+    /* TODO: add trace function */
+
+    return 1;
 }
 
 struct tracepkt *etmv4pkts[] =
@@ -512,6 +548,9 @@ struct tracepkt *etmv4pkts[] =
     &PKT_NAME(cond_inst_format_3),
     &PKT_NAME(cond_flush),
     &PKT_NAME(cond_result_format_1),
+    &PKT_NAME(cond_result_format_2),
+    &PKT_NAME(cond_result_format_3),
+    &PKT_NAME(cond_result_format_4),
     NULL,
 };
 
