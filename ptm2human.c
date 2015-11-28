@@ -132,6 +132,11 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    if (pkttype == -1) {
+        pkttype = PKT_TYPE_PFT;
+        use_pft();
+    }
+
     /* validate context ID size */
     switch (CONTEXTID_SIZE(&stream)) {
     case 0:
