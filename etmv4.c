@@ -581,7 +581,7 @@ int etmv4_synchronization(struct stream *stream)
     return -1;
 }
 
-void use_etmv4(void)
+void decode_etmv4(void)
 {
     tracepkts = etmv4pkts;
     synchronization = etmv4_synchronization;

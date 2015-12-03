@@ -10,7 +10,7 @@ enum
     DECODED,
 };
 
-struct pft_stream_info
+struct ptm_stream_info
 {
     int cycle_accurate;
     int contextid_size;
@@ -30,14 +30,14 @@ struct stream
     int state;
     union
     {
-        struct pft_stream_info pft;
+        struct ptm_stream_info ptm;
         struct etmv4_stream_info etmv4;
     } info;
     struct tracer tracer;
 };
 
-#define IS_CYC_ACC_STREAM(s) ((s)->info.pft.cycle_accurate)
-#define CONTEXTID_SIZE(s) ((s)->info.pft.contextid_size)
+#define IS_CYC_ACC_STREAM(s) ((s)->info.ptm.cycle_accurate)
+#define CONTEXTID_SIZE(s) ((s)->info.ptm.contextid_size)
 #define TRACE_INFO(s) ((s)->info.etmv4.info)
 #define CURR_SPEC_DEPTH(s) ((s)->info.etmv4.curr_spec_depth)
 #define CC_THRESHOLD(s) ((s)->info.etmv4.cc_threshold)

@@ -427,7 +427,7 @@ DECL_DECODE_FN(ignore)
     return 1;
 }
 
-struct tracepkt *pftpkts[] =
+struct tracepkt *ptmpkts[] =
 {
     &PKT_NAME(async),
     &PKT_NAME(isync),
@@ -443,7 +443,7 @@ struct tracepkt *pftpkts[] =
     NULL,
 };
 
-int pft_synchronization(struct stream *stream)
+int ptm_synchronization(struct stream *stream)
 {
     int i, p;
     unsigned char c;
@@ -463,8 +463,8 @@ int pft_synchronization(struct stream *stream)
     return -1;
 }
 
-void use_pft(void)
+void decode_ptm(void)
 {
-    tracepkts = pftpkts;
-    synchronization = pft_synchronization;
+    tracepkts = ptmpkts;
+    synchronization = ptm_synchronization;
 }

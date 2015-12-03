@@ -17,8 +17,8 @@ static const struct option options[] =
     { "input", 1, 0, 'i' },
     { "context", 1, 0, 'c' },
     { "cycle-accurate", 0, 0, 'C' },
-    { "use-pft", 0, 0, 'p' },
-    { "use-etmv4", 0, 0, 'e' },
+    { "decode-ptm", 0, 0, 'p' },
+    { "decode-etmv4", 0, 0, 'e' },
     { "help", 0, 0, 'h' },
     { NULL, 0, 0, 0   },
 };
@@ -32,8 +32,8 @@ void usage(void)
     LOGV("  -i|--input <PTM data stream file>\n");
     LOGV("  -c|--context <context ID size>\n");
     LOGV("  -C|--cycle-accurate\n");
-    LOGV("  -p|--use-pft (default option)\n");
-    LOGV("  -e|--use-etmv4\n");
+    LOGV("  -p|--decode-ptm (default option)\n");
+    LOGV("  -e|--decode-etmv4\n");
     LOGV("  -h|--help\n");
 }
 
@@ -97,10 +97,10 @@ int main(int argc, char **argv)
 
         case 'p':
             if (pkttype == -1) {
-                pkttype = PKT_TYPE_PFT;
-                use_pft();
+                pkttype = PKT_TYPE_PTM;
+                decode_ptm();
             } else {
-                LOGE("Use either --use_pft or --use_etmv4\n");
+                LOGE("Use either --decode_ptm or --decode_etmv4\n");
                 return EXIT_FAILURE;
             }
             break;
@@ -108,9 +108,9 @@ int main(int argc, char **argv)
         case 'e':
             if (pkttype == -1) {
                 pkttype = PKT_TYPE_ETMV4;
-                use_etmv4();
+                decode_etmv4();
             } else {
-                LOGE("Use either --use_pft or --use_etmv4\n");
+                LOGE("Use either --decode_ptm or --decode_etmv4\n");
                 return EXIT_FAILURE;
             }
             break;
@@ -133,8 +133,8 @@ int main(int argc, char **argv)
     }
 
     if (pkttype == -1) {
-        pkttype = PKT_TYPE_PFT;
-        use_pft();
+        pkttype = PKT_TYPE_PTM;
+        decode_ptm();
     }
 
     /* validate context ID size */

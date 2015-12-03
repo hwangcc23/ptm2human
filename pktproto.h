@@ -1,7 +1,7 @@
 #ifndef _PKTPROTO_H
 #define _PKTPROTO_H
 
-enum { PKT_TYPE_PFT = 0, PKT_TYPE_ETMV4 };
+enum { PKT_TYPE_PTM = 0, PKT_TYPE_ETMV4 };
 
 typedef unsigned char pkt_header;
 
@@ -39,7 +39,7 @@ typedef int (*sync_func)(struct stream *stream);
 extern struct tracepkt **tracepkts;
 extern sync_func synchronization;
 
-void use_etmv4(void);
-void use_pft(void);
+void decode_etmv4(void);
+void decode_ptm(void);
 
 #endif
