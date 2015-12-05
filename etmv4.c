@@ -28,6 +28,7 @@ DEF_TRACEPKT(cond_result_format_1, 0xf8, 0x68);
 DEF_TRACEPKT(cond_result_format_2, 0xf8, 0x48);
 DEF_TRACEPKT(cond_result_format_3, 0xf0, 0x50);
 DEF_TRACEPKT(cond_result_format_4, 0xfc, 0x44);
+DEF_TRACEPKT(event, 0xf0, 0x70);
 
 DECL_DECODE_FN(extension)
 {
@@ -527,6 +528,13 @@ DECL_DECODE_FN(cond_result_format_4)
     return 1;
 }
 
+DECL_DECODE_FN(event)
+{
+    LOGD("[event] EVENT = 0x%X\n", pkt[0] & 0x0F);
+
+    return 1;
+}
+
 struct tracepkt *etmv4pkts[] =
 {
     &PKT_NAME(extension),
@@ -551,6 +559,7 @@ struct tracepkt *etmv4pkts[] =
     &PKT_NAME(cond_result_format_2),
     &PKT_NAME(cond_result_format_3),
     &PKT_NAME(cond_result_format_4),
+    &PKT_NAME(event),
     NULL,
 };
 
