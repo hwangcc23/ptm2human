@@ -29,6 +29,13 @@ DEF_TRACEPKT(cond_result_format_2, 0xf8, 0x48);
 DEF_TRACEPKT(cond_result_format_3, 0xf0, 0x50);
 DEF_TRACEPKT(cond_result_format_4, 0xfc, 0x44);
 DEF_TRACEPKT(event, 0xf0, 0x70);
+DEF_TRACEPKT(short_address_is0, 0xff, 0x95);
+DEF_TRACEPKT(short_address_is1, 0xff, 0x96);
+DEF_TRACEPKT(long_address_32bit_is0, 0xff, 0x9a);
+DEF_TRACEPKT(long_address_32bit_is1, 0xff, 0x9b);
+DEF_TRACEPKT(long_address_64bit_is0, 0xff, 0x9d);
+DEF_TRACEPKT(long_address_64bit_is1, 0xff, 0x9e);
+DEF_TRACEPKT(exact_match_address, 0xfc, 0x90);
 
 DECL_DECODE_FN(extension)
 {
@@ -177,6 +184,8 @@ DECL_DECODE_FN(trace_info)
     } else {
         CC_THRESHOLD(stream) = 0;
     }
+
+    RESET_ADDRESS_REGISTER(stream);
 
     return index;
 }
@@ -535,6 +544,143 @@ DECL_DECODE_FN(event)
     return 1;
 }
 
+static void update_address_regs(struct stream * stream, unsigned long long address, int IS)
+{
+    ADDRESS_REGISTER(stream)[2] = ADDRESS_REGISTER(stream)[1];
+    ADDRESS_REGISTER(stream)[1] = ADDRESS_REGISTER(stream)[0];
+    ADDRESS_REGISTER(stream)[0].address = address;
+    ADDRESS_REGISTER(stream)[0].IS = IS;
+}
+
+DECL_DECODE_FN(short_address)
+{
+    int index = 0, IS;
+    unsigned long long address;
+
+    address = ADDRESS_REGISTER(stream)[0].address;
+    IS = (pkt[index++] & 0x01)? ADDR_REG_IS0: ADDR_REG_IS1;
+
+    if (IS == ADDR_REG_IS0) {
+        address &= ~0x000001FFLL;
+        address |= (unsigned long long)(pkt[index++] & 0x7F) << 2;
+        if (pkt[1] & c_bit) {
+            address &= ~0x0001FE00LL;
+            address |= (unsigned long long)pkt[index++] << 9;
+        }
+    } else {
+        address &= ~0x000000FFLL;
+        address |= (unsigned long long)(pkt[index++] & 0x7F) << 1;
+        if (pkt[1] & c_bit) {
+            address &= ~0x0000FF00LL;
+            address &= (unsigned long long)pkt[index++] << 8;
+        }
+    }
+
+    update_address_regs(stream, address, IS);
+
+    LOGD("[short address] address = 0x%016llx, IS = %d\n", address, IS);
+
+    /* TODO: add trace function */
+
+    return index;
+}
+
+DECL_DECODE_FN(short_address_is0)
+{
+    return decode_short_address(pkt, stream);
+}
+
+DECL_DECODE_FN(short_address_is1)
+{
+    return decode_short_address(pkt, stream);
+}
+
+DECL_DECODE_FN(long_address)
+{
+    int index = 1, IS;
+    unsigned long long address;
+
+    address = ADDRESS_REGISTER(stream)[0].address;
+
+    switch (pkt[0]) {
+    case 0x9a:
+        IS = ADDR_REG_IS0;
+        address &= ~0xFFFFFFFFLL;
+        address |= (unsigned long long)(pkt[index++] & 0x7F) << 2;
+        address |= (unsigned long long)(pkt[index++] & 0x7F) << 9;
+        address |= (unsigned long long)pkt[index++] << 16;
+        address |= (unsigned long long)pkt[index++] << 24;
+        break;
+
+    case 0x9b:
+        IS = ADDR_REG_IS1;
+        address &= ~0xFFFFFFFFLL;
+        address |= (unsigned long long)(pkt[index++] & 0x7F) << 1;
+        address |= (unsigned long long)pkt[index++] << 8;
+        address |= (unsigned long long)pkt[index++] << 16;
+        address |= (unsigned long long)pkt[index++] << 24;
+        break;
+
+    case 0x9d:
+        IS = ADDR_REG_IS0;
+        address = 0;
+        address |= (unsigned long long)(pkt[index++] & 0x7F) << 2;
+        address |= (unsigned long long)(pkt[index++] & 0x7F) << 9;
+        address |= (unsigned long long)pkt[index++] << 16;
+        address |= (unsigned long long)pkt[index++] << 24;
+        address |= (unsigned long long)pkt[index++] << 32;
+        address |= (unsigned long long)pkt[index++] << 40;
+        break;
+
+    case 0x9e:
+        IS = ADDR_REG_IS1;
+        address = 0;
+        address |= (unsigned long long)(pkt[index++] & 0x7F) << 1;
+        address |= (unsigned long long)pkt[index++] << 8;
+        address |= (unsigned long long)pkt[index++] << 16;
+        address |= (unsigned long long)pkt[index++] << 24;
+        address |= (unsigned long long)pkt[index++] << 32;
+        address |= (unsigned long long)pkt[index++] << 40;
+        break;
+
+    default:
+        return -1;
+    }
+
+    update_address_regs(stream, address, IS);
+
+    LOGD("[long address] address = 0x%016llx, IS = %d\n", address, IS);
+
+    /* TODO: add trace function */
+
+    return index;
+}
+
+DECL_DECODE_FN(long_address_32bit_is0)
+{
+    return decode_long_address(pkt, stream);
+}
+
+DECL_DECODE_FN(long_address_32bit_is1)
+{
+    return decode_long_address(pkt, stream);
+}
+
+DECL_DECODE_FN(long_address_64bit_is0)
+{
+    return decode_long_address(pkt, stream);
+}
+
+DECL_DECODE_FN(long_address_64bit_is1)
+{
+    return decode_long_address(pkt, stream);
+}
+
+DECL_DECODE_FN(exact_match_address)
+{
+    return -1;
+}
+
 struct tracepkt *etmv4pkts[] =
 {
     &PKT_NAME(extension),
@@ -560,6 +706,13 @@ struct tracepkt *etmv4pkts[] =
     &PKT_NAME(cond_result_format_3),
     &PKT_NAME(cond_result_format_4),
     &PKT_NAME(event),
+    &PKT_NAME(short_address_is0),
+    &PKT_NAME(short_address_is1),
+    &PKT_NAME(long_address_32bit_is0),
+    &PKT_NAME(long_address_32bit_is1),
+    &PKT_NAME(long_address_64bit_is0),
+    &PKT_NAME(long_address_64bit_is1),
+    &PKT_NAME(exact_match_address),
     NULL,
 };
 
@@ -581,6 +734,9 @@ int etmv4_synchronization(struct stream *stream)
                 if (p > 0) {
                     /* SYNCING -> INSYNC */
                     stream->state++;
+
+                    RESET_ADDRESS_REGISTER(stream);
+
                     return i;
                 }
             }
