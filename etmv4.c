@@ -696,7 +696,15 @@ DECL_DECODE_FN(long_address_64bit_is1)
 
 DECL_DECODE_FN(exact_match_address)
 {
-    return -1;
+	int QE = pkt[0] & 0x03;
+
+	LOGD("[Exact match address] QE = %d, address = 0x%016llx, IS = %d\n", QE,
+			ADDRESS_REGISTER(stream)[QE].address, ADDRESS_REGISTER(stream)[QE].IS);
+
+	update_address_regs(stream, ADDRESS_REGISTER(stream)[QE].address,
+							ADDRESS_REGISTER(stream)[QE].IS);
+
+    return 1;
 }
 
 struct tracepkt *etmv4pkts[] =
