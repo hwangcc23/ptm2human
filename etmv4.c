@@ -55,6 +55,10 @@ DEF_TRACEPKT(long_address_64bit_is0, 0xff, 0x9d);
 DEF_TRACEPKT(long_address_64bit_is1, 0xff, 0x9e);
 DEF_TRACEPKT(exact_match_address, 0xfc, 0x90);
 DEF_TRACEPKT(context, 0xfe, 0x80);
+DEF_TRACEPKT(address_context_32bit_is0, 0xff, 0x82);
+DEF_TRACEPKT(address_context_32bit_is1, 0xff, 0x83);
+DEF_TRACEPKT(address_context_64bit_is0, 0xff, 0x85);
+DEF_TRACEPKT(address_context_64bit_is1, 0xff, 0x86);
 
 DECL_DECODE_FN(extension)
 {
@@ -733,7 +737,7 @@ DECL_DECODE_FN(context)
             CONTEXTID |= pkt[index++] << 16;
             CONTEXTID |= pkt[index++] << 24;
         }
-        LOGD("[context] P = 1'b1, EL = %d, SF = %d, NS = %d, V = %d, C = %d, VMID = %d, CONTEXTID = 0x%04X\nd", EL, SF, NS, V, C, VMID, CONTEXTID);
+        LOGD("[context] P = 1'b1, EL = %d, SF = %d, NS = %d, V = %d, C = %d, VMID = %d, CONTEXTID = 0x%04X\n", EL, SF, NS, V, C, VMID, CONTEXTID);
     } else {
         LOGD("[context] P = 1'b0\n");
     }
@@ -741,6 +745,106 @@ DECL_DECODE_FN(context)
     /* TODO: add trace function */
 
     return index;
+}
+
+DECL_DECODE_FN(address_context)
+{
+    int index = 1, IS;
+    unsigned long long address;
+    int EL, SF, NS, V = 0, C = 0;
+    unsigned char data, VMID = 0;
+    unsigned int CONTEXTID = 0;
+
+    address = ADDRESS_REGISTER(stream)[0].address;
+
+    switch (pkt[0]) {
+    case 0x82:
+        IS = ADDR_REG_IS0;
+        address &= ~0xFFFFFFFFLL;
+        address |= (unsigned long long)(pkt[index++] & 0x7F) << 2;
+        address |= (unsigned long long)(pkt[index++] & 0x7F) << 9;
+        address |= (unsigned long long)pkt[index++] << 16;
+        address |= (unsigned long long)pkt[index++] << 24;
+        break;
+
+    case 0x83:
+        IS = ADDR_REG_IS1;
+        address &= ~0xFFFFFFFFLL;
+        address |= (unsigned long long)(pkt[index++] & 0x7F) << 1;
+        address |= (unsigned long long)pkt[index++] << 8;
+        address |= (unsigned long long)pkt[index++] << 16;
+        address |= (unsigned long long)pkt[index++] << 24;
+        break;
+
+    case 0x85:
+        IS = ADDR_REG_IS0;
+        address = 0;
+        address |= (unsigned long long)(pkt[index++] & 0x7F) << 2;
+        address |= (unsigned long long)(pkt[index++] & 0x7F) << 9;
+        address |= (unsigned long long)pkt[index++] << 16;
+        address |= (unsigned long long)pkt[index++] << 24;
+        address |= (unsigned long long)pkt[index++] << 32;
+        address |= (unsigned long long)pkt[index++] << 40;
+        break;
+
+    case 0x86:
+        IS = ADDR_REG_IS1;
+        address = 0;
+        address |= (unsigned long long)(pkt[index++] & 0x7F) << 1;
+        address |= (unsigned long long)pkt[index++] << 8;
+        address |= (unsigned long long)pkt[index++] << 16;
+        address |= (unsigned long long)pkt[index++] << 24;
+        address |= (unsigned long long)pkt[index++] << 32;
+        address |= (unsigned long long)pkt[index++] << 40;
+        break;
+
+    default:
+        return -1;
+    }
+
+    update_address_regs(stream, address, IS);
+
+    data = pkt[index++];
+    EL = data & 0x3;
+    SF = (data & 0x10) >> 4;
+    NS = (data & 0x20) >> 5;
+    if (data & 0x40) {
+        V = 1;
+        VMID = pkt[index++];
+    }
+    if (data & 0x80) {
+        C = 1;
+        CONTEXTID = pkt[index++];
+        CONTEXTID |= pkt[index++] << 8;
+        CONTEXTID |= pkt[index++] << 16;
+        CONTEXTID |= pkt[index++] << 24;
+    }
+
+    LOGD("[address with context] address = 0x%016llx, IS = %d, EL = %d, SF = %d, NS = %d, V = %d, C = %d, VMID = %d, CONTEXTID = 0x%04X\n", address, IS, EL, SF, NS, V, C, VMID, CONTEXTID);
+
+    /* TODO: add trace function */
+
+    return index;
+}
+
+DECL_DECODE_FN(address_context_32bit_is0)
+{
+    return decode_address_context(pkt, stream);
+}
+
+DECL_DECODE_FN(address_context_32bit_is1)
+{
+    return decode_address_context(pkt, stream);
+}
+
+DECL_DECODE_FN(address_context_64bit_is0)
+{
+    return decode_address_context(pkt, stream);
+}
+
+DECL_DECODE_FN(address_context_64bit_is1)
+{
+    return decode_address_context(pkt, stream);
 }
 
 struct tracepkt *etmv4pkts[] =
@@ -776,6 +880,10 @@ struct tracepkt *etmv4pkts[] =
     &PKT_NAME(long_address_64bit_is1),
     &PKT_NAME(exact_match_address),
     &PKT_NAME(context),
+    &PKT_NAME(address_context_32bit_is0),
+    &PKT_NAME(address_context_32bit_is1),
+    &PKT_NAME(address_context_64bit_is0),
+    &PKT_NAME(address_context_64bit_is1),
     NULL,
 };
 
