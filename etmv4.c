@@ -59,6 +59,12 @@ DEF_TRACEPKT(address_context_32bit_is0, 0xff, 0x82);
 DEF_TRACEPKT(address_context_32bit_is1, 0xff, 0x83);
 DEF_TRACEPKT(address_context_64bit_is0, 0xff, 0x85);
 DEF_TRACEPKT(address_context_64bit_is1, 0xff, 0x86);
+DEF_TRACEPKT(atom_format_1, 0xfe, 0xf6);
+DEF_TRACEPKT(atom_format_2, 0xfe, 0xd8);
+DEF_TRACEPKT(atom_format_3, 0xfe, 0xf8);
+DEF_TRACEPKT(atom_format_4, 0xfe, 0xdc);
+DEF_TRACEPKT(atom_format_5, 0xd4, 0xd4);
+DEF_TRACEPKT(atom_format_6, 0xc0, 0xc0);
 
 DECL_DECODE_FN(extension)
 {
@@ -847,6 +853,79 @@ DECL_DECODE_FN(address_context_64bit_is1)
     return decode_address_context(pkt, stream);
 }
 
+DECL_DECODE_FN(atom_format_1)
+{
+	int A;
+
+	A = pkt[0] & 0x01;
+	LOGD("[atom format 1] A = %d\n", A);
+
+    /* TODO: add trace function */
+
+	return 1;
+}
+
+DECL_DECODE_FN(atom_format_2)
+{
+	int A;
+
+	A = pkt[0] & 0x03;
+	LOGD("[atom format 2] A = %d\n", A);
+
+    /* TODO: add trace function */
+
+	return 1;
+}
+
+DECL_DECODE_FN(atom_format_3)
+{
+	int A;
+
+	A = pkt[0] & 0x07;
+	LOGD("[atom format 3] A = %d\n", A);
+
+    /* TODO: add trace function */
+
+	return 1;
+}
+
+DECL_DECODE_FN(atom_format_4)
+{
+	int A;
+
+	A = pkt[0] & 0x03;
+	LOGD("[atom format 4] A = %d\n", A);
+
+    /* TODO: add trace function */
+
+	return 1;
+}
+
+DECL_DECODE_FN(atom_format_5)
+{
+	unsigned int ABC;
+
+	ABC = ((pkt[0] >> 3) & 0x04) | (pkt[0] & 0x3);
+	LOGD("[atom format 5] ABC = %d\n", ABC);
+
+    /* TODO: add trace function */
+
+	return 1;
+}
+
+DECL_DECODE_FN(atom_format_6)
+{
+	unsigned int A, COUNT;
+
+	A = (pkt[0] >> 5) & 0x01;
+	COUNT = pkt[0] & 0x1f;
+	LOGD("[atom format 6] A = %d, COUNT = %d\n", A, COUNT);
+
+    /* TODO: add trace function */
+
+	return 1;
+}
+
 struct tracepkt *etmv4pkts[] =
 {
     &PKT_NAME(extension),
@@ -884,6 +963,12 @@ struct tracepkt *etmv4pkts[] =
     &PKT_NAME(address_context_32bit_is1),
     &PKT_NAME(address_context_64bit_is0),
     &PKT_NAME(address_context_64bit_is1),
+    &PKT_NAME(atom_format_1),
+    &PKT_NAME(atom_format_2),
+    &PKT_NAME(atom_format_3),
+    &PKT_NAME(atom_format_4),
+    &PKT_NAME(atom_format_5),
+    &PKT_NAME(atom_format_6),
     NULL,
 };
 
