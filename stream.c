@@ -54,7 +54,7 @@ int decode_stream(struct stream *stream)
     /* INSYNC -> DECODING */
     stream->state++;
     for (; cur < stream->buff_len; ) {
-        char c = stream->buff[cur];
+        unsigned char c = stream->buff[cur];
 
         LOGD("Got a packet header 0x%02x at offset %d\n", c, cur);
 
