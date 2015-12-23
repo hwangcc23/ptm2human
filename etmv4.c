@@ -65,6 +65,7 @@ DEF_TRACEPKT(atom_format_3, 0xfe, 0xf8);
 DEF_TRACEPKT(atom_format_4, 0xfe, 0xdc);
 DEF_TRACEPKT(atom_format_5, 0xd4, 0xd4);
 DEF_TRACEPKT(atom_format_6, 0xc0, 0xc0);
+DEF_TRACEPKT(q, 0xf0, 0xa0);
 
 DECL_DECODE_FN(extension)
 {
@@ -926,6 +927,100 @@ DECL_DECODE_FN(atom_format_6)
 	return 1;
 }
 
+DECL_DECODE_FN(q)
+{
+    int index = 0, type, IS, count_unknown = 0, i;
+    unsigned long long address;
+    unsigned char data;
+    unsigned int COUNT;
+
+    type = pkt[index++] & 0x0f;
+    switch (type) {
+    case 0:
+    case 1:
+    case 2:
+        update_address_regs(stream, ADDRESS_REGISTER(stream)[type].address,
+                                    ADDRESS_REGISTER(stream)[type].IS);
+        break;
+
+    case 5:
+    case 6:
+        address = ADDRESS_REGISTER(stream)[0].address;
+        IS = (type == 5)? ADDR_REG_IS0: ADDR_REG_IS1;
+        if (IS == ADDR_REG_IS0) {
+            address &= ~0x000001FFLL;
+            address |= (unsigned long long)(pkt[index++] & 0x7F) << 2;
+            if (pkt[1] & c_bit) {
+                address &= ~0x0001FE00LL;
+                address |= (unsigned long long)pkt[index++] << 9;
+            }
+        } else {
+            address &= ~0x000000FFLL;
+            address |= (unsigned long long)(pkt[index++] & 0x7F) << 1;
+            if (pkt[1] & c_bit) {
+                address &= ~0x0000FF00LL;
+                address &= (unsigned long long)pkt[index++] << 8;
+            }
+        }
+        update_address_regs(stream, address, IS);
+        break;
+
+    case 10:
+    case 11:
+        address = ADDRESS_REGISTER(stream)[0].address;
+        if (type == 10) {
+            IS = ADDR_REG_IS0;
+            address &= ~0xFFFFFFFFLL;
+            address |= (unsigned long long)(pkt[index++] & 0x7F) << 2;
+            address |= (unsigned long long)(pkt[index++] & 0x7F) << 9;
+            address |= (unsigned long long)pkt[index++] << 16;
+            address |= (unsigned long long)pkt[index++] << 24;
+        } else {
+            IS = ADDR_REG_IS1;
+            address &= ~0xFFFFFFFFLL;
+            address |= (unsigned long long)(pkt[index++] & 0x7F) << 1;
+            address |= (unsigned long long)pkt[index++] << 8;
+            address |= (unsigned long long)pkt[index++] << 16;
+            address |= (unsigned long long)pkt[index++] << 24;
+        }
+        update_address_regs(stream, address, IS);
+        break;
+
+    case 12:
+        break;
+
+    case 15:
+        count_unknown = 1;
+        break;
+
+    default:
+        index = -1;
+    }
+
+    if (!count_unknown) {
+        COUNT = 0;
+        for (i = 0; i < 5; i++) {
+            data = pkt[index++];
+            COUNT |= (data & ~c_bit) << (7 * i + 3);
+            if (!(data & c_bit)) {
+                break;
+            }
+        }
+    }
+
+    if (count_unknown) {
+        LOGD("[Q] type = %d, address = 0x%016llx, IS = %d, count unknown\n", type,
+                ADDRESS_REGISTER(stream)[0].address, ADDRESS_REGISTER(stream)[0].IS);
+    } else {
+        LOGD("[Q] type = %d, address = 0x%016llx, IS = %d, count =%d\n", type,
+                ADDRESS_REGISTER(stream)[0].address, ADDRESS_REGISTER(stream)[0].IS, COUNT);
+    }
+
+    /* TODO: add trace function */
+
+    return index;
+}
+
 struct tracepkt *etmv4pkts[] =
 {
     &PKT_NAME(extension),
@@ -969,6 +1064,7 @@ struct tracepkt *etmv4pkts[] =
     &PKT_NAME(atom_format_4),
     &PKT_NAME(atom_format_5),
     &PKT_NAME(atom_format_6),
+    &PKT_NAME(q),
     NULL,
 };
 
