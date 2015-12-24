@@ -856,75 +856,75 @@ DECL_DECODE_FN(address_context_64bit_is1)
 
 DECL_DECODE_FN(atom_format_1)
 {
-	int A;
+    int A;
 
-	A = pkt[0] & 0x01;
-	LOGD("[atom format 1] A = %d\n", A);
+    A = pkt[0] & 0x01;
+    LOGD("[atom format 1] A = %d\n", A);
 
     /* TODO: add trace function */
 
-	return 1;
+    return 1;
 }
 
 DECL_DECODE_FN(atom_format_2)
 {
-	int A;
+    int A;
 
-	A = pkt[0] & 0x03;
-	LOGD("[atom format 2] A = %d\n", A);
+    A = pkt[0] & 0x03;
+    LOGD("[atom format 2] A = %d\n", A);
 
     /* TODO: add trace function */
 
-	return 1;
+    return 1;
 }
 
 DECL_DECODE_FN(atom_format_3)
 {
-	int A;
+    int A;
 
-	A = pkt[0] & 0x07;
-	LOGD("[atom format 3] A = %d\n", A);
+    A = pkt[0] & 0x07;
+    LOGD("[atom format 3] A = %d\n", A);
 
     /* TODO: add trace function */
 
-	return 1;
+    return 1;
 }
 
 DECL_DECODE_FN(atom_format_4)
 {
-	int A;
+    int A;
 
-	A = pkt[0] & 0x03;
-	LOGD("[atom format 4] A = %d\n", A);
+    A = pkt[0] & 0x03;
+    LOGD("[atom format 4] A = %d\n", A);
 
     /* TODO: add trace function */
 
-	return 1;
+    return 1;
 }
 
 DECL_DECODE_FN(atom_format_5)
 {
-	unsigned int ABC;
+    unsigned int ABC;
 
-	ABC = ((pkt[0] >> 3) & 0x04) | (pkt[0] & 0x3);
-	LOGD("[atom format 5] ABC = %d\n", ABC);
+    ABC = ((pkt[0] >> 3) & 0x04) | (pkt[0] & 0x3);
+    LOGD("[atom format 5] ABC = %d\n", ABC);
 
     /* TODO: add trace function */
 
-	return 1;
+    return 1;
 }
 
 DECL_DECODE_FN(atom_format_6)
 {
-	unsigned int A, COUNT;
+    unsigned int A, COUNT;
 
-	A = (pkt[0] >> 5) & 0x01;
-	COUNT = pkt[0] & 0x1f;
-	LOGD("[atom format 6] A = %d, COUNT = %d\n", A, COUNT);
+    A = (pkt[0] >> 5) & 0x01;
+    COUNT = pkt[0] & 0x1f;
+    LOGD("[atom format 6] A = %d, COUNT = %d\n", A, COUNT);
 
     /* TODO: add trace function */
 
-	return 1;
+    return 1;
 }
 
 DECL_DECODE_FN(q)
