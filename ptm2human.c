@@ -92,6 +92,9 @@ int main(int argc, char **argv)
     struct stream stream;
     struct stat sb;
 
+    /* disable output buffering */
+    setbuf(stdout, NULL);
+
     memset(&stream, 0, sizeof(struct stream));
 
     for (;;) {
