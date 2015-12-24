@@ -113,13 +113,13 @@ DECL_DECODE_FN(extension)
     return index;
 }
 
-/* FIXME: handle not only the instruction trace stream but also the data trace stream */
 DECL_DECODE_FN(trace_info)
 {
     int index = 1, i;
     unsigned int plctl = 0, info = 0, key = 0, spec = 0, cyct = 0;
     unsigned char data;
 
+    /* TODO: refactor the following code into a reusable function */
     for (i = 0; i < 4; i++) {
         data = pkt[index++];
         plctl |= (data & ~c_bit) << (7 * i);
