@@ -128,11 +128,8 @@ DECL_DECODE_FN(trace_info)
         }
     }
     if (i >= 1) {
-        /* ETMv4 arch spec 6/228: A trace unit must not output more than 1 PLCTL field in a Trace info packet */
         LOGE("More than 1 PLCTL field in the trace info packet\n");
         return -1;
-    } else {
-        LOGD("[trace info] plctl = 0x%X\n", plctl);
     }
 
     if (plctl & 1) {
@@ -148,8 +145,6 @@ DECL_DECODE_FN(trace_info)
             /* ETMv4 arch spec 6/228: A trace unit must not output more than 1 INFO field in a Trace info packet */
             LOGE("More than 1 INFO field in the trace info packet\n");
             return -1;
-        } else {
-            LOGD("[trace info] info = 0x%X\n", info);
         }
         TRACE_INFO(&(stream->tracer)) = info;
     } else {
@@ -169,8 +164,6 @@ DECL_DECODE_FN(trace_info)
             /* 4 fileds are enough since p0_key_max is a 32-bit integer */
             LOGE("More than 4 KEY fields in the trace info packet\n");
             return -1;
-        } else {
-            LOGD("[trace info] key = 0x%X\n", key);
         }
     }
 
@@ -187,8 +180,6 @@ DECL_DECODE_FN(trace_info)
             /* 4 fileds are enough since max_spec_depth is a 32-bit integer */
             LOGE("More than 4 SPEC fields in the trace info packet\n");
             return -1;
-        } else {
-            LOGD("[trace info] curr_spec_depth = 0x%X\n", spec);
         }
         CURR_SPEC_DEPTH(&(stream->tracer)) = spec;
     } else {
@@ -207,8 +198,6 @@ DECL_DECODE_FN(trace_info)
         if (i >= 2) {
             LOGE("More than 2 CYCT fields in the trace info packet\n");
             return -1;
-        } else {
-            LOGD("[trace info] cc_thresold = 0x%X\n", cyct);
         }
         CC_THRESHOLD(&(stream->tracer)) = cyct;
     } else {
@@ -216,6 +205,11 @@ DECL_DECODE_FN(trace_info)
     }
 
     RESET_ADDRESS_REGISTER(&(stream->tracer));
+
+    LOGD("[trace info] plctl = 0x%X, info = 0x%X, key = 0x%X, spec = %d, cyct = 0x%X\n",
+            plctl, TRACE_INFO(&(stream->tracer)), key,
+            CURR_SPEC_DEPTH(&(stream->tracer)),
+            CC_THRESHOLD(&(stream->tracer)));
 
     return index;
 }
