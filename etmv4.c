@@ -151,9 +151,9 @@ DECL_DECODE_FN(trace_info)
         } else {
             LOGD("[trace info] info = 0x%X\n", info);
         }
-        TRACE_INFO(stream) = info;
+        TRACE_INFO(&(stream->tracer)) = info;
     } else {
-        TRACE_INFO(stream) = 0;
+        TRACE_INFO(&(stream->tracer)) = 0;
     }
 
     if (plctl & 2) {
@@ -190,9 +190,9 @@ DECL_DECODE_FN(trace_info)
         } else {
             LOGD("[trace info] curr_spec_depth = 0x%X\n", spec);
         }
-        CURR_SPEC_DEPTH(stream) = spec;
+        CURR_SPEC_DEPTH(&(stream->tracer)) = spec;
     } else {
-        CURR_SPEC_DEPTH(stream) = 0;
+        CURR_SPEC_DEPTH(&(stream->tracer)) = 0;
     }
 
     if (plctl & 8) {
@@ -210,12 +210,12 @@ DECL_DECODE_FN(trace_info)
         } else {
             LOGD("[trace info] cc_thresold = 0x%X\n", cyct);
         }
-        CC_THRESHOLD(stream) = cyct;
+        CC_THRESHOLD(&(stream->tracer)) = cyct;
     } else {
-        CC_THRESHOLD(stream) = 0;
+        CC_THRESHOLD(&(stream->tracer)) = 0;
     }
 
-    RESET_ADDRESS_REGISTER(stream);
+    RESET_ADDRESS_REGISTER(&(stream->tracer));
 
     return index;
 }
@@ -576,10 +576,10 @@ DECL_DECODE_FN(event)
 
 static void update_address_regs(struct stream * stream, unsigned long long address, int IS)
 {
-    ADDRESS_REGISTER(stream)[2] = ADDRESS_REGISTER(stream)[1];
-    ADDRESS_REGISTER(stream)[1] = ADDRESS_REGISTER(stream)[0];
-    ADDRESS_REGISTER(stream)[0].address = address;
-    ADDRESS_REGISTER(stream)[0].IS = IS;
+    ADDRESS_REGISTER(&(stream->tracer))[2] = ADDRESS_REGISTER(&(stream->tracer))[1];
+    ADDRESS_REGISTER(&(stream->tracer))[1] = ADDRESS_REGISTER(&(stream->tracer))[0];
+    ADDRESS_REGISTER(&(stream->tracer))[0].address = address;
+    ADDRESS_REGISTER(&(stream->tracer))[0].IS = IS;
 }
 
 DECL_DECODE_FN(short_address)
@@ -587,7 +587,7 @@ DECL_DECODE_FN(short_address)
     int index = 0, IS;
     unsigned long long address;
 
-    address = ADDRESS_REGISTER(stream)[0].address;
+    address = ADDRESS_REGISTER(&(stream->tracer))[0].address;
     IS = (pkt[index++] & 0x01)? ADDR_REG_IS0: ADDR_REG_IS1;
 
     if (IS == ADDR_REG_IS0) {
@@ -630,7 +630,7 @@ DECL_DECODE_FN(long_address)
     int index = 1, IS;
     unsigned long long address;
 
-    address = ADDRESS_REGISTER(stream)[0].address;
+    address = ADDRESS_REGISTER(&(stream->tracer))[0].address;
 
     switch (pkt[0]) {
     case 0x9a:
@@ -711,10 +711,11 @@ DECL_DECODE_FN(exact_match_address)
     int QE = pkt[0] & 0x03;
 
     LOGD("[Exact match address] QE = %d, address = 0x%016llx, IS = %d\n", QE,
-            ADDRESS_REGISTER(stream)[QE].address, ADDRESS_REGISTER(stream)[QE].IS);
+            ADDRESS_REGISTER(&(stream->tracer))[QE].address,
+            ADDRESS_REGISTER(&(stream->tracer))[QE].IS);
 
-    update_address_regs(stream, ADDRESS_REGISTER(stream)[QE].address,
-                                ADDRESS_REGISTER(stream)[QE].IS);
+    update_address_regs(stream, ADDRESS_REGISTER(&(stream->tracer))[QE].address,
+                                ADDRESS_REGISTER(&(stream->tracer))[QE].IS);
 
     /* TODO: add trace function */
 
@@ -762,7 +763,7 @@ DECL_DECODE_FN(address_context)
     unsigned char data, VMID = 0;
     unsigned int CONTEXTID = 0;
 
-    address = ADDRESS_REGISTER(stream)[0].address;
+    address = ADDRESS_REGISTER(&(stream->tracer))[0].address;
 
     switch (pkt[0]) {
     case 0x82:
@@ -939,13 +940,13 @@ DECL_DECODE_FN(q)
     case 0:
     case 1:
     case 2:
-        update_address_regs(stream, ADDRESS_REGISTER(stream)[type].address,
-                                    ADDRESS_REGISTER(stream)[type].IS);
+        update_address_regs(stream, ADDRESS_REGISTER(&(stream->tracer))[type].address,
+                                    ADDRESS_REGISTER(&(stream->tracer))[type].IS);
         break;
 
     case 5:
     case 6:
-        address = ADDRESS_REGISTER(stream)[0].address;
+        address = ADDRESS_REGISTER(&(stream->tracer))[0].address;
         IS = (type == 5)? ADDR_REG_IS0: ADDR_REG_IS1;
         if (IS == ADDR_REG_IS0) {
             address &= ~0x000001FFLL;
@@ -967,7 +968,7 @@ DECL_DECODE_FN(q)
 
     case 10:
     case 11:
-        address = ADDRESS_REGISTER(stream)[0].address;
+        address = ADDRESS_REGISTER(&(stream->tracer))[0].address;
         if (type == 10) {
             IS = ADDR_REG_IS0;
             address &= ~0xFFFFFFFFLL;
@@ -1010,10 +1011,12 @@ DECL_DECODE_FN(q)
 
     if (count_unknown) {
         LOGD("[Q] type = %d, address = 0x%016llx, IS = %d, count unknown\n", type,
-                ADDRESS_REGISTER(stream)[0].address, ADDRESS_REGISTER(stream)[0].IS);
+                ADDRESS_REGISTER(&(stream->tracer))[0].address,
+                ADDRESS_REGISTER(&(stream->tracer))[0].IS);
     } else {
         LOGD("[Q] type = %d, address = 0x%016llx, IS = %d, count =%d\n", type,
-                ADDRESS_REGISTER(stream)[0].address, ADDRESS_REGISTER(stream)[0].IS, COUNT);
+                ADDRESS_REGISTER(&(stream->tracer))[0].address,
+                ADDRESS_REGISTER(&(stream->tracer))[0].IS, COUNT);
     }
 
     /* TODO: add trace function */
@@ -1087,7 +1090,7 @@ int etmv4_synchronization(struct stream *stream)
                     /* SYNCING -> INSYNC */
                     stream->state++;
 
-                    RESET_ADDRESS_REGISTER(stream);
+                    RESET_ADDRESS_REGISTER(&(stream->tracer));
 
                     return i;
                 }

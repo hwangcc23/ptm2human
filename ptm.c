@@ -76,7 +76,7 @@ DECL_DECODE_FN(isync)
      * The cycle count is present only when cycle-acculate tracing is enabled 
      * AND the reason code is not b00. 
      */
-    if (IS_CYC_ACC_STREAM(stream) && reason) {
+    if (IS_CYC_ACC(&(stream->tracer)) && reason) {
         cyc_cnt = (unsigned int)(pkt[index] & 0x3c) >> 2;
         c_bit = (pkt[index++] & 0x40) >> 6;
         LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
@@ -92,7 +92,7 @@ DECL_DECODE_FN(isync)
         }
     }
 
-    switch (CONTEXTID_SIZE(stream)) {
+    switch (CONTEXTID_SIZE(&(stream->tracer))) {
     case 1:
         contextid = (unsigned int)(pkt[index++]);
         break;
@@ -120,10 +120,10 @@ DECL_DECODE_FN(isync)
                     (info & 0x08)? 1: 0,    \
                     (info & 0x04)? 1: 0,    \
                     (info & 0x02)? 1: 0);
-        if (IS_CYC_ACC_STREAM(stream)) {
+        if (IS_CYC_ACC(&(stream->tracer))) {
             LOGD("cycle count = 0x%x, ", cyc_cnt);
         }
-        if (CONTEXTID_SIZE(stream)) {
+        if (CONTEXTID_SIZE(&(stream->tracer))) {
             LOGD("context id = 0x%x, ", contextid);
         }
         LOGD("\n");
@@ -141,7 +141,7 @@ DECL_DECODE_FN(atom)
     unsigned int cyc_cnt;
     static const char F_bit_mask = 0x02, F_bit_shift = 1;
 
-    if (IS_CYC_ACC_STREAM(stream)) {
+    if (IS_CYC_ACC(&(stream->tracer))) {
         index = 0;
         cyc_cnt = (unsigned int)(pkt[index] & 0x3c) >> 2;
         c_bit = (pkt[index] & 0x40) >> 6;
@@ -231,7 +231,7 @@ DECL_DECODE_FN(branch_addr)
         }
     } while (index < 5);
 
-    if (IS_CYC_ACC_STREAM(stream)) {
+    if (IS_CYC_ACC(&(stream->tracer))) {
         cyc_cnt = (unsigned int)(pkt[index] & 0x3c) >> 2;
         c_bit = (pkt[index++] & 0x40) >> 6;
         LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
@@ -257,7 +257,7 @@ DECL_DECODE_FN(branch_addr)
     if (have_exp) {
         LOGD("info = |exception %d|NS %d|Hyp %d|, ", exp, NS, Hyp);
     }
-    if (IS_CYC_ACC_STREAM(stream)) {
+    if (IS_CYC_ACC(&(stream->tracer))) {
         LOGD("cycle count = 0x%x, ", cyc_cnt);
     }
     LOGD("\n");
@@ -347,7 +347,7 @@ DECL_DECODE_FN(contextid)
     unsigned int contextid = 0;
     int i, index = 1;
 
-    switch (CONTEXTID_SIZE(stream)) {
+    switch (CONTEXTID_SIZE(&(stream->tracer))) {
     case 1:
         contextid = (unsigned int)(pkt[index++]);
         break;
@@ -402,7 +402,7 @@ DECL_DECODE_FN(timestamp)
         index++;
     }
 
-    if (IS_CYC_ACC_STREAM(stream)) {
+    if (IS_CYC_ACC(&(stream->tracer))) {
         cyc_cnt = (unsigned int)(pkt[index] & 0x3c) >> 2;
         c_bit = (pkt[index++] & 0x40) >> 6;
         LOGD("cyc_cnt = 0x%x, c_bit = %d\n", cyc_cnt, c_bit); 
@@ -419,7 +419,7 @@ DECL_DECODE_FN(timestamp)
     }
 
     LOGD("[timestamp] timestamp = 0x%llx ", timestamp);
-    if (IS_CYC_ACC_STREAM(stream)) {
+    if (IS_CYC_ACC(&(stream->tracer))) {
         LOGD("cycle count = 0x%x, ", cyc_cnt);
     }
     LOGD("\n");

@@ -22,15 +22,11 @@
 #include "stream.h"
 #include "output.h"
 
-/*
- * stream_of_tracer: cast the tracer member of a stream structure out to the stream struct
- */
-#define stream_of_tracer(_t)    \
-    (struct stream *)((ssize_t)(_t) - (ssize_t)&(((struct stream *)0x00)->tracer))
-
-void tracer_sync(struct tracer *tracer, unsigned int addr, int inst_state, unsigned int info,   \
-                    unsigned int cyc_cnt, unsigned int contextid)
+void tracer_sync(void *t, unsigned int addr, int inst_state,  \
+                    unsigned int info, unsigned int cyc_cnt, unsigned int contextid)
 {
+    struct ptm_tracer *tracer = (struct ptm_tracer *)t;
+
     tracer->last_addr = addr;
     if (inst_state == THUMB_STATE) {
         tracer->inst_state = (info & 0x04)? THUMBEE_STATE: THUMB_STATE;
@@ -58,18 +54,20 @@ void tracer_sync(struct tracer *tracer, unsigned int addr, int inst_state, unsig
     }
     OUTPUT("%s, ", (info & 0x08)? "non-secure state": "secure state");
 
-    if (IS_CYC_ACC_STREAM(stream_of_tracer(tracer))) {
+    if (IS_CYC_ACC(tracer)) {
         OUTPUT("cycle count 0x%08x, ", cyc_cnt);
     }
-    if (CONTEXTID_SIZE(stream_of_tracer(tracer))) {
+    if (CONTEXTID_SIZE(tracer)) {
         OUTPUT("context ID 0x%x, ", contextid);
     }
     OUTPUT("\n"); 
 }
 
-void tracer_branch(struct tracer *tracer, unsigned int addr, int addr_size, \
+void tracer_branch(void *t, unsigned int addr, int addr_size, \
                     int inst_state, unsigned int exception, int NS, int Hyp, unsigned int cyc_cnt)
 {
+    struct ptm_tracer *tracer = (struct ptm_tracer *)t;
+
     if (addr_size != MAX_NR_ADDR_BIT) {
         if (tracer->inst_state == ARM_STATE) {
             addr *= 4;
@@ -156,15 +154,17 @@ void tracer_branch(struct tracer *tracer, unsigned int addr, int addr_size, \
             OUTPUT("into Hyp mode, ");
         }
     }
-    if (IS_CYC_ACC_STREAM(stream_of_tracer(tracer))) {
+    if (IS_CYC_ACC(tracer)) {
         OUTPUT("cycle count 0x%08x, ", cyc_cnt);
     }
     OUTPUT("\n");
 }
 
-void tracer_waypoint(struct tracer *tracer, unsigned int addr, int addr_size,   \
+void tracer_waypoint(void *t, unsigned int addr, int addr_size,   \
                         int inst_state, int AltS)
 {
+    struct ptm_tracer *tracer = (struct ptm_tracer *)t;
+
     if (addr_size != MAX_NR_ADDR_BIT) {
         if (tracer->inst_state == ARM_STATE) {
             addr *= 4;
@@ -189,26 +189,28 @@ void tracer_waypoint(struct tracer *tracer, unsigned int addr, int addr_size,   
     OUTPUT("\n");
 }
 
-void tracer_contextid(struct tracer *tracer, unsigned int contextid)
+void tracer_contextid(void *t, unsigned int contextid)
 {
     OUTPUT("context ID sets to 0x%x\n", contextid);
 }
 
-void tracer_vmid(struct tracer *tracer, unsigned int VMID)
+void tracer_vmid(void *t, unsigned int VMID)
 {
     OUTPUT("VMID sets to 0x%x\n", VMID);
 }
 
-void tracer_timestamp(struct tracer *tracer, unsigned long long timestamp, unsigned int cyc_cnt)
+void tracer_timestamp(void *t, unsigned long long timestamp, unsigned int cyc_cnt)
 {
+    struct ptm_tracer *tracer = (struct ptm_tracer *)t;
+
     OUTPUT("timestamp 0x%llx, ", timestamp);
-    if (IS_CYC_ACC_STREAM(stream_of_tracer(tracer))) {
+    if (IS_CYC_ACC(tracer)) {
         OUTPUT("cycle count 0x%08x, ", cyc_cnt);
     }
     OUTPUT("\n");
 }
 
-void tracer_exception_ret(struct tracer *tracer)
+void tracer_exception_ret(void *t)
 {
     OUTPUT("exception return\n");
 }
