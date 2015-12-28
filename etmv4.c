@@ -1092,6 +1092,14 @@ int etmv4_synchronization(struct stream *stream)
                     return i;
                 }
             }
+
+            /*
+             * If reach here, there is no trace info packet found.
+             * According to IHI0064C_etm_v4_architecture_spec:
+             * ARM recommends that the Trace Info packet appears in the trace
+             * stream soon after the A-Sync packet.
+             */
+            LOGE("No trace info packet right after an a-sync packet\n");
         }
     }
 
