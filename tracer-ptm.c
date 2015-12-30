@@ -1,5 +1,5 @@
 /*
- * tracer.c: Core of trace analyzer
+ * tracer.c: Core of PTM tracer
  * Copyright (C) 2013  Chih-Chyuan Hwang (hwangcc@csie.nctu.edu.tw)
  *
  * This program is free software; you can redistribute it and/or
