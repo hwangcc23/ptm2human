@@ -142,7 +142,6 @@ DECL_DECODE_FN(trace_info)
             }
         }
         if (i >= 1) {
-            /* ETMv4 arch spec 6/228: A trace unit must not output more than 1 INFO field in a Trace info packet */
             LOGE("More than 1 INFO field in the trace info packet\n");
             return -1;
         }
@@ -206,10 +205,13 @@ DECL_DECODE_FN(trace_info)
 
     RESET_ADDRESS_REGISTER(&(stream->tracer));
 
-    LOGD("[trace info] plctl = 0x%X, info = 0x%X, key = 0x%X, spec = %d, cyct = 0x%X\n",
-            plctl, TRACE_INFO(&(stream->tracer)), key,
-            CURR_SPEC_DEPTH(&(stream->tracer)),
-            CC_THRESHOLD(&(stream->tracer)));
+    LOGD("[trace info] plctl = 0x%X, info = 0x%X(%s, %s, %s, %s), key = 0x%X, spec = %d, cyct = 0x%X\n",
+            plctl, TRACE_INFO(&(stream->tracer)),
+            (TRACE_INFO(&(stream->tracer)) & 0x01)? "Cycle count is enabled": "Cycle count is disabled",
+            (TRACE_INFO(&(stream->tracer)) & 0x0E)? "Tracing of conditional non-branch instruction is enabled": "Tracing of conditional non-branch instruction is disabled",
+            (TRACE_INFO(&(stream->tracer)) & 0x10)? "Explicit tracing of load instructions": "No explicit tracing of load instructions",
+            (TRACE_INFO(&(stream->tracer)) & 0x20)? "Explicit tracing of store instructions": "No explicit tracing of store instructions",
+            key, CURR_SPEC_DEPTH(&(stream->tracer)), CC_THRESHOLD(&(stream->tracer)));
 
     return index;
 }
