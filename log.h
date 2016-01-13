@@ -19,8 +19,8 @@
 #ifndef _LOG_H
 #define _LOG_H
 
-#define LOGV(f, args...) fprintf(stdout, f, ## args)
-#define LOGD(f, args...) fprintf(stderr, f, ## args)
-#define LOGE(f, args...) fprintf(stderr, "ptm2human error: " f, ## args)
+#define LOGV(f, args...) fprintf(stdout, "ptm2human: "f, ## args)
+#define LOGD(f, args...) fprintf(stderr, "ptm2human %s:%s:%d - " f, __FILE__, __FUNCTION__, __LINE__, ## args)
+#define LOGE(f, args...) fprintf(stderr, "ptm2human ERROR: " f, ## args)
 
 #endif
