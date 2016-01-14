@@ -19,8 +19,10 @@
 #ifndef _LOG_H
 #define _LOG_H
 
-#define LOGV(f, args...) fprintf(stdout, "ptm2human: "f, ## args)
-#define LOGD(f, args...) fprintf(stderr, "ptm2human %s:%s:%d - " f, __FILE__, __FUNCTION__, __LINE__, ## args)
-#define LOGE(f, args...) fprintf(stderr, "ptm2human ERROR: " f, ## args)
+extern int debuglog_on;
+
+#define LOGV(f, args...) fprintf(stdout, f, ## args)
+#define LOGD(f, args...) do { if (debuglog_on) fprintf(stderr, "%s:%s:%d - " f, __FILE__, __FUNCTION__, __LINE__, ## args); } while (0)
+#define LOGE(f, args...) fprintf(stderr, "ERROR: " f, ## args)
 
 #endif

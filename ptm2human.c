@@ -30,6 +30,8 @@
 #include "stream.h"
 #include "pktproto.h"
 
+int debuglog_on = 0;
+
 static const struct option options[] = 
 {
     { "input", 1, 0, 'i' },
@@ -37,22 +39,24 @@ static const struct option options[] =
     { "cycle-accurate", 0, 0, 'C' },
     { "decode-ptm", 0, 0, 'p' },
     { "decode-etmv4", 0, 0, 'e' },
+    { "debuglog", 0, 0, 'd' },
     { "help", 0, 0, 'h' },
     { NULL, 0, 0, 0   },
 };
 
-static const char *optstring = "i:c:Cpeh";
+static const char *optstring = "i:c:Cpedh";
 
 void usage(void)
 {
-    LOGV("Usage: ptm2human [options]\n");
-    LOGV("Options:\n");
-    LOGV("  -i|--input <PTM data stream file>\n");
-    LOGV("  -c|--context <context ID size>\n");
-    LOGV("  -C|--cycle-accurate\n");
-    LOGV("  -p|--decode-ptm (default option)\n");
-    LOGV("  -e|--decode-etmv4\n");
-    LOGV("  -h|--help\n");
+    printf("Usage: ptm2human [options] -i /TRACE/FILE/PATH\n");
+    printf("Options:\n");
+    printf("  -i|--input <trace file>                 Give the trace file\n\n");
+    printf("  -p|--decode-ptm (default option)        Decode PTM trace\n");
+    printf("  -c|--context <context ID size>          Give the size of ContextID for PTM trace only\n");
+    printf("  -C|--cycle-accurate                     Enable Cycle-Accurate for PTM trace only\n\n");
+    printf("  -e|--decode-etmv4                       Decode ETMv4 trace\n\n");
+    printf("  -d|--debuglog                           Enable debug messages\n");
+    printf("  -h|--help                               Show help messages\n");
 }
 
 int file2buff(const char *input_file, const char *buff, unsigned int buff_len)
@@ -134,6 +138,10 @@ int main(int argc, char **argv)
                 LOGE("Use either --decode_ptm or --decode_etmv4\n");
                 return EXIT_FAILURE;
             }
+            break;
+
+        case 'd':
+            debuglog_on = 1;
             break;
 
         case 'h':
