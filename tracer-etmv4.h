@@ -30,12 +30,14 @@ struct address_register
 struct etmv4_tracer
 {
     unsigned int info;
+    unsigned int p0_key;
     unsigned int curr_spec_depth;
     unsigned int cc_threshold;
     struct address_register address_register[3];
 };
 
 #define TRACE_INFO(t) (((struct etmv4_tracer *)(t))->info)
+#define P0_KEY(t) (((struct etmv4_tracer *)(t))->p0_key)
 #define CURR_SPEC_DEPTH(t) (((struct etmv4_tracer *)(t))->curr_spec_depth)
 #define CC_THRESHOLD(t) (((struct etmv4_tracer *)(t))->cc_threshold)
 #define ADDRESS_REGISTER(t) ((struct etmv4_tracer *)(t))->address_register
@@ -48,5 +50,10 @@ struct etmv4_tracer
             ((struct etmv4_tracer *)(t))->address_register[2].address = 0;    \
             ((struct etmv4_tracer *)(t))->address_register[2].IS = ADDR_REG_IS_UNKNOWN;   \
         } while (0)
+
+
+extern void tracer_trace_info(void *t, unsigned int plctl, unsigned int info,\
+                              unsigned int key, unsigned int spec,\
+                              unsigned int cyct);
 
 #endif
