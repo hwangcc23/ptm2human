@@ -33,9 +33,9 @@ void tracer_trace_info(void *t, unsigned int plctl, unsigned int info,\
     CURR_SPEC_DEPTH(tracer) = (plctl & 4)? spec: 0;
     CC_THRESHOLD(tracer) = (plctl & 8)? cyct: 0;
 
-    OUTPUT("TraceInfo (%s, %s, %s, %s, p0_key = 0x%X, curr_spec_depth = %d, cc_threshold = 0x%X)\n",
-            (TRACE_INFO(tracer) & 0x01)? "Cycle count is enabled": "Cycle count is disabled",
-            (TRACE_INFO(tracer) & 0x0E)? "Tracing of conditional non-branch instruction is enabled": "Tracing of conditional non-branch instruction is disabled",
+    OUTPUT("TraceInfo - %s, %s, %s, %s, p0_key = 0x%X, curr_spec_depth = %d, cc_threshold = 0x%X)\n",
+            (TRACE_INFO(tracer) & 0x01)? "Cycle count enabled": "Cycle count disabled",
+            (TRACE_INFO(tracer) & 0x0E)? "Tracing of conditional non-branch instruction enabled": "Tracing of conditional non-branch instruction disabled",
             (TRACE_INFO(tracer) & 0x10)? "Explicit tracing of load instructions": "No explicit tracing of load instructions",
             (TRACE_INFO(tracer) & 0x20)? "Explicit tracing of store instructions": "No explicit tracing of store instructions",
             P0_KEY(tracer), CURR_SPEC_DEPTH(tracer), CC_THRESHOLD(tracer));
