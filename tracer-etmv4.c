@@ -40,3 +40,8 @@ void tracer_trace_info(void *t, unsigned int plctl, unsigned int info,\
             (TRACE_INFO(tracer) & 0x20)? "Explicit tracing of store instructions": "No explicit tracing of store instructions",
             P0_KEY(tracer), CURR_SPEC_DEPTH(tracer), CC_THRESHOLD(tracer));
 }
+
+void tracer_trace_on(void *t)
+{
+    OUTPUT("TraceOn - A discontinuity in the trace stream\n");
+}

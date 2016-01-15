@@ -207,6 +207,9 @@ DECL_DECODE_FN(trace_info)
 DECL_DECODE_FN(trace_on)
 {
     LOGD("[trace on]\n");
+
+    tracer_trace_on(&(stream->tracer));
+
     return 1;
 }
 
