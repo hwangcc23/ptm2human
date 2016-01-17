@@ -33,12 +33,13 @@ void tracer_trace_info(void *t, unsigned int plctl, unsigned int info,\
     CURR_SPEC_DEPTH(tracer) = (plctl & 4)? spec: 0;
     CC_THRESHOLD(tracer) = (plctl & 8)? cyct: 0;
 
-    OUTPUT("TraceInfo - %s, %s, %s, %s, p0_key = 0x%X, curr_spec_depth = %d, cc_threshold = 0x%X)\n",
-            (TRACE_INFO(tracer) & 0x01)? "Cycle count enabled": "Cycle count disabled",
-            (TRACE_INFO(tracer) & 0x0E)? "Tracing of conditional non-branch instruction enabled": "Tracing of conditional non-branch instruction disabled",
-            (TRACE_INFO(tracer) & 0x10)? "Explicit tracing of load instructions": "No explicit tracing of load instructions",
-            (TRACE_INFO(tracer) & 0x20)? "Explicit tracing of store instructions": "No explicit tracing of store instructions",
-            P0_KEY(tracer), CURR_SPEC_DEPTH(tracer), CC_THRESHOLD(tracer));
+    OUTPUT("TraceInfo - %s,\n", (TRACE_INFO(tracer) & 0x01)? "Cycle count enabled": "Cycle count disabled");
+    OUTPUT("            %s,\n", (TRACE_INFO(tracer) & 0x0E)? "Tracing of conditional non-branch instruction enabled": "Tracing of conditional non-branch instruction disabled");
+    OUTPUT("            %s,\n", (TRACE_INFO(tracer) & 0x10)? "Explicit tracing of load instructions": "No explicit tracing of load instructions");
+    OUTPUT("            %s,\n", (TRACE_INFO(tracer) & 0x20)? "Explicit tracing of store instructions": "No explicit tracing of store instructions");
+    OUTPUT("            p0_key = 0x%X,\n", P0_KEY(tracer));
+    OUTPUT("            curr_spec_depth = %d,\n", CURR_SPEC_DEPTH(tracer));
+    OUTPUT("            cc_threshold = 0x%X\n", CC_THRESHOLD(tracer));
 }
 
 void tracer_trace_on(void *t)
