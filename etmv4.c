@@ -715,6 +715,9 @@ DECL_DECODE_FN(context)
     unsigned char data, VMID = 0;
     unsigned int CONTEXTID = 0;
 
+    /* to suppress compiler warnings */
+    EL = SF = NS = 0;
+
     data = pkt[index++];
     if (data & 1) {
         data = pkt[index++];
@@ -737,7 +740,7 @@ DECL_DECODE_FN(context)
         LOGD("[context] P = 1'b0\n");
     }
 
-    /* TODO: add trace function */
+    tracer_context(&(stream->tracer), pkt[0] & 1, EL, SF, NS, V, VMID, C, CONTEXTID);
 
     return index;
 }

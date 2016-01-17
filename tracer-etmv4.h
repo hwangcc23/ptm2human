@@ -30,16 +30,18 @@ struct address_register
 struct etmv4_tracer
 {
     unsigned int info;
-    unsigned int p0_key;
-    unsigned int curr_spec_depth;
-    unsigned int cc_threshold;
     struct address_register address_register[3];
+    unsigned int context_id;
+    unsigned int vmid:8;
+    unsigned int ex_level:2;
+    unsigned int security:1;
+    unsigned int sixty_four_bit:1;
+    unsigned int curr_spec_depth;
+    unsigned int p0_key;
+    unsigned int cc_threshold;
 };
 
 #define TRACE_INFO(t) (((struct etmv4_tracer *)(t))->info)
-#define P0_KEY(t) (((struct etmv4_tracer *)(t))->p0_key)
-#define CURR_SPEC_DEPTH(t) (((struct etmv4_tracer *)(t))->curr_spec_depth)
-#define CC_THRESHOLD(t) (((struct etmv4_tracer *)(t))->cc_threshold)
 #define ADDRESS_REGISTER(t) ((struct etmv4_tracer *)(t))->address_register
 #define RESET_ADDRESS_REGISTER(t)   \
         do {    \
@@ -50,11 +52,22 @@ struct etmv4_tracer
             ((struct etmv4_tracer *)(t))->address_register[2].address = 0;    \
             ((struct etmv4_tracer *)(t))->address_register[2].IS = ADDR_REG_IS_UNKNOWN;   \
         } while (0)
+#define CONTEXT_ID(t) (((struct etmv4_tracer *)(t))->context_id)
+#define VMID(t) (((struct etmv4_tracer *)(t))->vmid)
+#define EX_LEVEL(t) (((struct etmv4_tracer *)(t))->ex_level)
+#define SECURITY(t) (((struct etmv4_tracer *)(t))->security)
+#define SIXTY_FOUR_BIT(t) (((struct etmv4_tracer *)(t))->sixty_four_bit)
+#define CURR_SPEC_DEPTH(t) (((struct etmv4_tracer *)(t))->curr_spec_depth)
+#define P0_KEY(t) (((struct etmv4_tracer *)(t))->p0_key)
+#define CC_THRESHOLD(t) (((struct etmv4_tracer *)(t))->cc_threshold)
 
 
 extern void tracer_trace_info(void *t, unsigned int plctl, unsigned int info,\
                               unsigned int key, unsigned int spec,\
                               unsigned int cyct);
 extern void tracer_trace_on(void *t);
+extern void tracer_context(void *t, int p, int el, int sf, int ns, \
+                           int v, unsigned int vmid,   \
+                           int c, unsigned int contextid);
 
 #endif

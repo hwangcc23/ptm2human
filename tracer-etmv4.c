@@ -46,3 +46,28 @@ void tracer_trace_on(void *t)
 {
     OUTPUT("TraceOn - A discontinuity in the trace stream\n");
 }
+
+void tracer_context(void *t, int p, int el, int sf, int ns, \
+                    int v, unsigned int vmid,   \
+                    int c, unsigned int contextid)
+{
+    struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
+
+    if (p) {
+        EX_LEVEL(tracer) = el;
+        SIXTY_FOUR_BIT(tracer) = sf;
+        SECURITY(tracer) = !ns;
+        if (v) {
+            VMID(tracer) = vmid;
+        }
+        if (c) {
+            CONTEXT_ID(tracer) = contextid;
+        }
+    }
+
+    OUTPUT("Context - Context ID = 0x%X,\n", CONTEXT_ID(tracer));
+    OUTPUT("          VMID = 0x%X,\n", VMID(tracer));
+    OUTPUT("          Exception level = EL%d,\n", EX_LEVEL(tracer));
+    OUTPUT("          Security = %s,\n", (SECURITY(tracer))? "S": "NS");
+    OUTPUT("          %d-bit instruction\n", (SIXTY_FOUR_BIT(tracer))? 64: 32);
+}
