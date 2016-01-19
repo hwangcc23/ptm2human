@@ -593,11 +593,11 @@ DECL_DECODE_FN(short_address)
         }
     }
 
-    update_address_regs(stream, address, IS);
-
     LOGD("[short address] address = 0x%016llx, IS = %d\n", address, IS);
 
-    /* TODO: add trace function */
+    update_address_regs(stream, address, IS);
+
+    tracer_address(&(stream->tracer));
 
     return index;
 }
@@ -664,11 +664,11 @@ DECL_DECODE_FN(long_address)
         return -1;
     }
 
-    update_address_regs(stream, address, IS);
-
     LOGD("[long address] address = 0x%016llx, IS = %d\n", address, IS);
 
-    /* TODO: add trace function */
+    update_address_regs(stream, address, IS);
+
+    tracer_address(&(stream->tracer));
 
     return index;
 }
@@ -704,7 +704,7 @@ DECL_DECODE_FN(exact_match_address)
     update_address_regs(stream, ADDRESS_REGISTER(&(stream->tracer))[QE].address,
                                 ADDRESS_REGISTER(&(stream->tracer))[QE].IS);
 
-    /* TODO: add trace function */
+    tracer_address(&(stream->tracer));
 
     return 1;
 }
@@ -820,7 +820,8 @@ DECL_DECODE_FN(address_context)
 
     LOGD("[address with context] address = 0x%016llx, IS = %d, EL = %d, SF = %d, NS = %d, V = %d, C = %d, VMID = %d, CONTEXTID = 0x%04X\n", address, IS, EL, SF, NS, V, C, VMID, CONTEXTID);
 
-    /* TODO: add trace function */
+    tracer_context(&(stream->tracer), 0, EL, SF, NS, V, VMID, C, CONTEXTID);
+    tracer_address(&(stream->tracer));
 
     return index;
 }

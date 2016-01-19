@@ -71,3 +71,20 @@ void tracer_context(void *t, int p, int el, int sf, int ns, \
     OUTPUT("          Security = %s,\n", (SECURITY(tracer))? "S": "NS");
     OUTPUT("          %d-bit instruction\n", (SIXTY_FOUR_BIT(tracer))? 64: 32);
 }
+
+void tracer_address(void *t)
+{
+    struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
+    unsigned long long address = ADDRESS_REGISTER(tracer)[0].address;
+    int IS = ADDRESS_REGISTER(tracer)[0].IS;
+
+    if (SIXTY_FOUR_BIT(tracer)) {
+        OUTPUT("Address - Instruction address 0x%016llx, Instruction set Aarch64\n", address);
+    } else {
+        if (IS) {
+            OUTPUT("Address - Instruction address 0x%016llx, Instruction set Aarch32 (ARM)\n", address);
+        } else {
+            OUTPUT("Address - Instruction address 0x%016llx, Instruction set Aarch32 (Thumb)\n", address);
+        }
+    }
+}
