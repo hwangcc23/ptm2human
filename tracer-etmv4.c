@@ -20,6 +20,7 @@
 #include "tracer.h"
 #include "stream.h"
 #include "output.h"
+#include "log.h"
 
 void tracer_trace_info(void *t, unsigned int plctl, unsigned int info,\
                        unsigned int key, unsigned int spec, unsigned int cyct)
@@ -86,5 +87,28 @@ void tracer_address(void *t)
         } else {
             OUTPUT("Address - Instruction address 0x%016llx, Instruction set Aarch32 (Thumb)\n", address);
         }
+    }
+}
+
+void tracer_atom(void *t, int type)
+{
+    struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
+
+    if (type == ATOM_TYPE_E) {
+        OUTPUT("ATOM - E\n");
+    } else if (type == ATOM_TYPE_N) {
+        OUTPUT("ATOM - N\n");
+    } else {
+        LOGE("Invalid ATOM type (%d)\n", type);
+        return ;
+    }
+
+    /* TODO: p0_key = (p0_key + 1) % p0_max_key */
+
+    CURR_SPEC_DEPTH(tracer)++;
+    /* TODO: initialize MAX_SPEC_DEPTH */
+    if (CURR_SPEC_DEPTH(tracer) > MAX_SPEC_DEPTH(tracer)) {
+        /* TODO: commit_element(1) */
+        CURR_SPEC_DEPTH(tracer)--;
     }
 }

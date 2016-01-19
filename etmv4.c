@@ -853,7 +853,7 @@ DECL_DECODE_FN(atom_format_1)
     A = pkt[0] & 0x01;
     LOGD("[atom format 1] A = %d\n", A);
 
-    /* TODO: add trace function */
+    tracer_atom(&(stream->tracer), A? ATOM_TYPE_E: ATOM_TYPE_N);
 
     return 1;
 }
@@ -865,7 +865,8 @@ DECL_DECODE_FN(atom_format_2)
     A = pkt[0] & 0x03;
     LOGD("[atom format 2] A = %d\n", A);
 
-    /* TODO: add trace function */
+    tracer_atom(&(stream->tracer), (A & 1)? ATOM_TYPE_E: ATOM_TYPE_N);
+    tracer_atom(&(stream->tracer), (A & 2)? ATOM_TYPE_E: ATOM_TYPE_N);
 
     return 1;
 }
@@ -877,7 +878,9 @@ DECL_DECODE_FN(atom_format_3)
     A = pkt[0] & 0x07;
     LOGD("[atom format 3] A = %d\n", A);
 
-    /* TODO: add trace function */
+    tracer_atom(&(stream->tracer), (A & 1)? ATOM_TYPE_E: ATOM_TYPE_N);
+    tracer_atom(&(stream->tracer), (A & 2)? ATOM_TYPE_E: ATOM_TYPE_N);
+    tracer_atom(&(stream->tracer), (A & 4)? ATOM_TYPE_E: ATOM_TYPE_N);
 
     return 1;
 }
@@ -889,7 +892,39 @@ DECL_DECODE_FN(atom_format_4)
     A = pkt[0] & 0x03;
     LOGD("[atom format 4] A = %d\n", A);
 
-    /* TODO: add trace function */
+    switch (A) {
+    case 0:
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        break;
+
+    case 1:
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        break;
+
+    case 2:
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        break;
+
+    case 3:
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        break;
+
+    default:
+        LOGE("Invalid A in a ATOM format 4 packet\n");
+        break;
+    }
 
     return 1;
 }
@@ -901,7 +936,43 @@ DECL_DECODE_FN(atom_format_5)
     ABC = ((pkt[0] >> 3) & 0x04) | (pkt[0] & 0x3);
     LOGD("[atom format 5] ABC = %d\n", ABC);
 
-    /* TODO: add trace function */
+    switch (ABC) {
+    case 5:
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        break;
+
+    case 1:
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        break;
+
+    case 2:
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        break;
+
+    case 3:
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        break;
+
+    default:
+        LOGE("Invalid ABC in a ATOM format 5 packet\n");
+        break;
+    }
 
     return 1;
 }
@@ -909,12 +980,16 @@ DECL_DECODE_FN(atom_format_5)
 DECL_DECODE_FN(atom_format_6)
 {
     unsigned int A, COUNT;
+    int i;
 
     A = (pkt[0] >> 5) & 0x01;
     COUNT = pkt[0] & 0x1f;
     LOGD("[atom format 6] A = %d, COUNT = %d\n", A, COUNT);
 
-    /* TODO: add trace function */
+    for (i = 0; i < (COUNT + 2); i++) {
+        tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+    }
+    tracer_atom(&(stream->tracer), (A)? ATOM_TYPE_N: ATOM_TYPE_E);
 
     return 1;
 }

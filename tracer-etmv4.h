@@ -21,6 +21,8 @@
 
 enum { ADDR_REG_IS_UNKNOWN = -1, ADDR_REG_IS0 = 0, ADDR_REG_IS1 = 1 };
 
+enum { ATOM_TYPE_E = 1, ATOM_TYPE_N = 2 };
+
 struct address_register
 {
     unsigned long long address;
@@ -38,6 +40,7 @@ struct etmv4_tracer
     unsigned int sixty_four_bit:1;
     unsigned int curr_spec_depth;
     unsigned int p0_key;
+    unsigned int max_spec_depth;
     unsigned int cc_threshold;
 };
 
@@ -59,6 +62,7 @@ struct etmv4_tracer
 #define SIXTY_FOUR_BIT(t) (((struct etmv4_tracer *)(t))->sixty_four_bit)
 #define CURR_SPEC_DEPTH(t) (((struct etmv4_tracer *)(t))->curr_spec_depth)
 #define P0_KEY(t) (((struct etmv4_tracer *)(t))->p0_key)
+#define MAX_SPEC_DEPTH(t) (((struct etmv4_tracer *)(t))->max_spec_depth)
 #define CC_THRESHOLD(t) (((struct etmv4_tracer *)(t))->cc_threshold)
 
 
@@ -70,5 +74,6 @@ extern void tracer_context(void *t, int p, int el, int sf, int ns, \
                            int v, unsigned int vmid,   \
                            int c, unsigned int contextid);
 extern void tracer_address(void *t);
+extern void tracer_atom(void *t, int type);
 
 #endif
