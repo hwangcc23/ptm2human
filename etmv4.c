@@ -368,7 +368,7 @@ DECL_DECODE_FN(commit)
     }
     LOGD("[commit] COMMIT = %d\n", commit);
 
-    /* TODO: add trace function */
+    tracer_commit(&(stream->tracer), commit);
 
     return index;
 }

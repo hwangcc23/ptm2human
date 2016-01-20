@@ -73,6 +73,15 @@ void tracer_ts(void *t, unsigned long long timestamp, int have_cc, unsigned int 
     }
 }
 
+void tracer_commit(void *t, unsigned int commit)
+{
+    struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
+
+    CURR_SPEC_DEPTH(tracer) -= commit;
+
+    OUTPUT("Commit - %d\n", commit);
+}
+
 void tracer_context(void *t, int p, int el, int sf, int ns, \
                     int v, unsigned int vmid,   \
                     int c, unsigned int contextid)
@@ -133,8 +142,7 @@ void tracer_atom(void *t, int type)
     CURR_SPEC_DEPTH(tracer)++;
     /* TODO: initialize MAX_SPEC_DEPTH */
     if (CURR_SPEC_DEPTH(tracer) > MAX_SPEC_DEPTH(tracer)) {
-        /* TODO: commit_element(1) */
-        CURR_SPEC_DEPTH(tracer)--;
+        tracer_commit(tracer, 1);
     }
 }
 
@@ -153,7 +161,6 @@ void tracer_q(void *t, unsigned int count)
     CURR_SPEC_DEPTH(tracer)++;
     /* TODO: initialize MAX_SPEC_DEPTH */
     if (CURR_SPEC_DEPTH(tracer) > MAX_SPEC_DEPTH(tracer)) {
-        /* TODO: commit_element(1) */
-        CURR_SPEC_DEPTH(tracer)--;
+        tracer_commit(tracer, 1);
     }
 }

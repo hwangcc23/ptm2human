@@ -79,5 +79,6 @@ extern void tracer_address(void *t);
 extern void tracer_atom(void *t, int type);
 extern void tracer_q(void *t, unsigned int count);
 extern void tracer_ts(void *t, unsigned long long timestamp, int have_cc, unsigned int count);
+extern void tracer_commit(void *t, unsigned int commit);
 
 #endif
