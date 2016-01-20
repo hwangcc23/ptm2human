@@ -75,5 +75,6 @@ extern void tracer_context(void *t, int p, int el, int sf, int ns, \
                            int c, unsigned int contextid);
 extern void tracer_address(void *t);
 extern void tracer_atom(void *t, int type);
+extern void tracer_q(void *t, unsigned int count);
 
 #endif

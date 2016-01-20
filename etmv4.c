@@ -1085,7 +1085,8 @@ DECL_DECODE_FN(q)
                 ADDRESS_REGISTER(&(stream->tracer))[0].IS, COUNT);
     }
 
-    /* TODO: add trace function */
+    tracer_q(&(stream->tracer), (count_unknown)? 0: COUNT);
+    tracer_address(&(stream->tracer));
 
     return index;
 }
