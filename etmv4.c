@@ -241,7 +241,7 @@ DECL_DECODE_FN(timestamp)
 
     LOGD("[timestemp] timestamp = %llu, cycle count = %d\n", ts, count);
 
-    /* TODO: add trace function */
+    tracer_ts(&(stream->tracer), ts, pkt[0] & 1, count);
 
     return index;
 }

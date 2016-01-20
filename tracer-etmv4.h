@@ -32,6 +32,7 @@ struct address_register
 struct etmv4_tracer
 {
     unsigned int info;
+    unsigned long long timestamp;
     struct address_register address_register[3];
     unsigned int context_id;
     unsigned int vmid:8;
@@ -45,6 +46,7 @@ struct etmv4_tracer
 };
 
 #define TRACE_INFO(t) (((struct etmv4_tracer *)(t))->info)
+#define TRACE_TIMESTAMP(t) (((struct etmv4_tracer *)(t))->timestamp)
 #define ADDRESS_REGISTER(t) ((struct etmv4_tracer *)(t))->address_register
 #define RESET_ADDRESS_REGISTER(t)   \
         do {    \
@@ -76,5 +78,6 @@ extern void tracer_context(void *t, int p, int el, int sf, int ns, \
 extern void tracer_address(void *t);
 extern void tracer_atom(void *t, int type);
 extern void tracer_q(void *t, unsigned int count);
+extern void tracer_ts(void *t, unsigned long long timestamp, int have_cc, unsigned int count);
 
 #endif

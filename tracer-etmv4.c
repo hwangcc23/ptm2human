@@ -48,6 +48,31 @@ void tracer_trace_on(void *t)
     OUTPUT("TraceOn - A discontinuity in the trace stream\n");
 }
 
+void tracer_ts(void *t, unsigned long long timestamp, int have_cc, unsigned int count)
+{
+    struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
+    int clz, i;
+
+    if (!timestamp) {
+        clz = __builtin_clz(timestamp);
+
+        LOGD("as-is: TRACE_TIMESTAMP = 0x%016llx, timestamp = 0x%016llx, clz = %d\n",
+             TRACE_TIMESTAMP(tracer), timestamp, clz);
+
+        for (i = 0; i < (64 - clz); i++) {
+            TRACE_TIMESTAMP(tracer) &= ~(0x1LL) << i;
+        }
+        TRACE_TIMESTAMP(tracer) |= timestamp;
+
+        LOGD("after-replace: TRACE_TIMESTAMP = 0x%016llx\n", TRACE_TIMESTAMP(tracer));
+    }
+
+    OUTPUT("Timestamp - %lld\n", TRACE_TIMESTAMP(tracer));
+    if (have_cc) {
+        OUTPUT("            (number of cycles between the most recent Cycle Count element %d)\n", count);
+    }
+}
+
 void tracer_context(void *t, int p, int el, int sf, int ns, \
                     int v, unsigned int vmid,   \
                     int c, unsigned int contextid)
