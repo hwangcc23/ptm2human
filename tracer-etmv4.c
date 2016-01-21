@@ -77,9 +77,25 @@ void tracer_commit(void *t, unsigned int commit)
 {
     struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
 
-    CURR_SPEC_DEPTH(tracer) -= commit;
-
     OUTPUT("Commit - %d\n", commit);
+
+    CURR_SPEC_DEPTH(tracer) -= commit;
+}
+
+void tracer_cancel(void *t, int mispredict, unsigned int cancel)
+{
+    struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
+
+    OUTPUT("Cancel - %d\n", cancel);
+
+    CURR_SPEC_DEPTH(tracer) -= cancel;
+
+    /* TODO: p0_key = (p0_key -cancel ) % p0_max_key */
+
+    if (mispredict) {
+        /* TODO: emit mispredict */
+        /* TODO: emit conditional_flush */
+    }
 }
 
 void tracer_context(void *t, int p, int el, int sf, int ns, \

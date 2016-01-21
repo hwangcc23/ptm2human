@@ -393,17 +393,36 @@ DECL_DECODE_FN(cancel)
             return -1;
         }
         LOGD("[cancel format 1] M = %d, CANCEL = %d\n", pkt[0] & 0x01, cancel);
-    } if (!(pkt[index] & 0x80)) {
+        tracer_cancel(&(stream->tracer), pkt[0] & 0x01, cancel);
+    } else if (!(pkt[index] & 0x80)) {
         /* cancle format 2 */
         index++;
         LOGD("[cancel format 2] A = %d\n", pkt[index] & 0x03);
+        switch (pkt[index] & 0x03) {
+        case 1:
+            tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+            break;
+        case 2:
+            tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+            tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+            break;
+        case 3:
+            tracer_atom(&(stream->tracer), ATOM_TYPE_N);
+            break;
+        default:
+            LOGE("Unexpected A in a cancel format 2 packet");
+            break;
+        }
+        tracer_cancel(&(stream->tracer), 1, 1);
     } else {
         /* cancle format 3 */
         index++;
         LOGD("[cancel format 3] CC = %d, A = %d\n", (pkt[index] & 0x06) >> 1, pkt[index] & 0x01);
+        if (pkt[index] & 0x01) {
+            tracer_atom(&(stream->tracer), ATOM_TYPE_E);
+        }
+        tracer_cancel(&(stream->tracer), 1, ((pkt[index] & 0x06) >> 1) + 2);
     }
-
-    /* TODO: add trace function */
 
     return index;
 }
