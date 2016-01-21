@@ -93,9 +93,38 @@ void tracer_cancel(void *t, int mispredict, unsigned int cancel)
     /* TODO: p0_key = (p0_key -cancel ) % p0_max_key */
 
     if (mispredict) {
-        /* TODO: emit mispredict */
+        tracer_mispredict(tracer, 0);
         /* TODO: emit conditional_flush */
     }
+}
+
+void tracer_mispredict(void *t, int arg)
+{
+    struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
+
+    switch (arg) {
+    case 0:
+        break;
+
+    case 1:
+        tracer_atom(tracer, ATOM_TYPE_E);
+        break;
+
+    case 2:
+        tracer_atom(tracer, ATOM_TYPE_E);
+        tracer_atom(tracer, ATOM_TYPE_E);
+        break;
+
+    case 3:
+        tracer_atom(tracer, ATOM_TYPE_N);
+        break;
+
+    default:
+        LOGE("Invalid argument to tracer_mispredict\n");
+        break;
+    }
+
+    OUTPUT("Mispredict\n");
 }
 
 void tracer_context(void *t, int p, int el, int sf, int ns, \

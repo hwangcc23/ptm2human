@@ -446,7 +446,7 @@ DECL_DECODE_FN(mispredict)
 {
     LOGD("[mispredict] A = %d\n", pkt[0] & 0x03);
 
-    /* TODO: add trace function */
+    tracer_mispredict(&(stream->tracer), pkt[0] & 0x03);
 
     return 1;
 }
