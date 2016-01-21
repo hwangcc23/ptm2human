@@ -56,7 +56,7 @@ void tracer_ts(void *t, unsigned long long timestamp, int have_cc, unsigned int 
     if (!timestamp) {
         clz = __builtin_clz(timestamp);
 
-        LOGD("as-is: TRACE_TIMESTAMP = 0x%016llx, timestamp = 0x%016llx, clz = %d\n",
+        LOGD("before-replace: TRACE_TIMESTAMP = 0x%016llx, timestamp = 0x%016llx, clz = %d\n",
              TRACE_TIMESTAMP(tracer), timestamp, clz);
 
         for (i = 0; i < (64 - clz); i++) {
