@@ -22,6 +22,11 @@
 #include "output.h"
 #include "log.h"
 
+static const char *exp_name[32] = { "PE reset", "Debug halt", "Call", "Trap",
+                                    "System error", NULL, "Inst debug", "Data debug",
+                                    NULL, NULL, "Alignment", "Inst fault",
+                                    "Data fault", NULL, "IRQ", "FIQ" };
+
 void tracer_trace_info(void *t, unsigned int plctl, unsigned int info,\
                        unsigned int key, unsigned int spec, unsigned int cyct)
 {
@@ -64,6 +69,22 @@ void tracer_ts(void *t, unsigned long long timestamp, int have_cc, unsigned int 
     }
 }
 
+void tracer_exception(void *t, int type)
+{
+    struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
+
+    OUTPUT("Exception - exception type %s, address 0x%016llx\n", (type < 32 && exp_name[type])? exp_name[type]: "Reserved", ADDRESS_REGISTER(tracer)[0].address);
+
+    /* TODO: emit conditional_flush */
+
+    /* TODO: p0_key = (p0_key + 1) % p0_max_key */
+
+    CURR_SPEC_DEPTH(tracer)++;
+    if (CURR_SPEC_DEPTH(tracer) > MAX_SPEC_DEPTH(tracer)) {
+        tracer_commit(tracer, 1);
+    }
+}
+
 void tracer_commit(void *t, unsigned int commit)
 {
     struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
@@ -81,7 +102,7 @@ void tracer_cancel(void *t, int mispredict, unsigned int cancel)
 
     CURR_SPEC_DEPTH(tracer) -= cancel;
 
-    /* TODO: p0_key = (p0_key -cancel ) % p0_max_key */
+    /* TODO: p0_key = (p0_key - cancel) % p0_max_key */
 
     if (mispredict) {
         tracer_mispredict(tracer, 0);
@@ -195,7 +216,6 @@ void tracer_q(void *t, unsigned int count)
     /* TODO: p0_key = (p0_key + 1) % p0_max_key */
 
     CURR_SPEC_DEPTH(tracer)++;
-    /* TODO: initialize MAX_SPEC_DEPTH */
     if (CURR_SPEC_DEPTH(tracer) > MAX_SPEC_DEPTH(tracer)) {
         tracer_commit(tracer, 1);
     }

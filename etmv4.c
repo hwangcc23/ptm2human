@@ -296,7 +296,7 @@ DECL_DECODE_FN(exception)
             }
         }
 
-        /* TODO: add trace function */
+        tracer_exception(&(stream->tracer), TYPE);
     }
 
     return index;
