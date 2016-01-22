@@ -215,14 +215,19 @@ DECL_DECODE_FN(trace_on)
 
 DECL_DECODE_FN(timestamp)
 {
-    int index, i;
+    int index, i, nr_replace;
     unsigned long long ts = 0;
     unsigned char data;
     unsigned int count = 0;
 
-    for (index = 1, i = 0; index < 10; i++) {
+    for (index = 1, i = 0, nr_replace = 0; index < 10; i++) {
         data = pkt[index++];
         ts |= (data & ~c_bit) << (7 * i);
+        if (index != 9) {
+            nr_replace += 7;
+        } else {
+            nr_replace += 8;
+        }
         if ((index != 9) && !(data & c_bit)) {
             break;
         }
@@ -239,9 +244,9 @@ DECL_DECODE_FN(timestamp)
         }
     }
 
-    LOGD("[timestemp] timestamp = %llu, cycle count = %d\n", ts, count);
+    LOGD("[timestemp] timestamp = %llu, cycle count = %d, nr_replace = %d\n", ts, count, nr_replace);
 
-    tracer_ts(&(stream->tracer), ts, pkt[0] & 1, count);
+    tracer_ts(&(stream->tracer), ts, pkt[0] & 1, count, nr_replace);
 
     return index;
 }

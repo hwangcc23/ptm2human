@@ -78,7 +78,8 @@ extern void tracer_context(void *t, int p, int el, int sf, int ns, \
 extern void tracer_address(void *t);
 extern void tracer_atom(void *t, int type);
 extern void tracer_q(void *t, unsigned int count);
-extern void tracer_ts(void *t, unsigned long long timestamp, int have_cc, unsigned int count);
+extern void tracer_ts(void *t, unsigned long long timestamp, int have_cc, unsigned int count,\
+                      int nr_replace);
 extern void tracer_commit(void *t, unsigned int commit);
 extern void tracer_cancel(void *t, int mispredict, unsigned int cancel);
 extern void tracer_mispredict(void *t, int arg);
