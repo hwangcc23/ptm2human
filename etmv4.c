@@ -253,7 +253,7 @@ DECL_DECODE_FN(timestamp)
 
 DECL_DECODE_FN(exception)
 {
-    int index = 0;
+    int index = 0, EE, TYPE, P, i, ret;
     unsigned char data1, data2 = 0;
 
     if (pkt[index++] & 1) {
@@ -265,15 +265,39 @@ DECL_DECODE_FN(exception)
         if (data1 & c_bit) {
             data2 = pkt[index++];
         }
-        LOGD("[exception] E1:E0 = %d, TYPE = 0x%02X, P = %d\n",
-                ((data1 & 0x40) >> 5) | (data1 & 0x01),
-                ((data1 & 0x3E) >> 1) | (data2 & 0x1F),
-                (data2 & 0x20) >> 5);
+        EE = ((data1 & 0x40) >> 5) | (data1 & 0x01);
+        TYPE = ((data1 & 0x3E) >> 1) | (data2 & 0x1F);
+        P = (data2 & 0x20) >> 5;
 
-        /* TODO: add decoding for the address packet */
+        LOGD("[exception] E1:E0 = %d, TYPE = 0x%02X, P = %d\n", EE, TYPE, P);
+
+        if (EE != 1 && EE != 2) {
+            LOGE("Invalid EE in the exception packet\n");
+            return -1;
+        } else if (EE == 2) {
+            /* there is an address packet */
+            data1 = pkt[index];
+            for (i = 0; tracepkts[i]; i++) {
+                if ((data1 & tracepkts[i]->mask) == tracepkts[i]->val) {
+                    break;
+                }
+            }
+            if (!tracepkts[i]) {
+                ret = -1;
+            } else {
+                ret = tracepkts[i]->decode((const unsigned char *)&(pkt[index]), stream);
+            }
+
+            if (ret > 0) {
+                index += ret;
+            } else {
+                LOGE("Invalid address packet in the exception packet\n");
+                return -1;
+            }
+        }
+
+        /* TODO: add trace function */
     }
-
-    /* TODO: add trace function */
 
     return index;
 }
