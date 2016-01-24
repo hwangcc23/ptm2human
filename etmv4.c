@@ -259,6 +259,7 @@ DECL_DECODE_FN(exception)
     if (pkt[index++] & 1) {
         /* exception return packet */
         LOGD("[exception return]\n");
+        tracer_exception_return(&(stream->tracer));
     } else {
         /* exception patcket */
         data1 = pkt[index++];

@@ -85,6 +85,13 @@ void tracer_exception(void *t, int type)
     }
 }
 
+void tracer_exception_return(void *t)
+{
+    OUTPUT("Exception return\n");
+
+    /* FIXME: for ARMv6-M and ARMv7-M PEs, exception_return is a P0 element */
+}
+
 void tracer_commit(void *t, unsigned int commit)
 {
     struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
