@@ -93,7 +93,7 @@ DECL_DECODE_FN(extension)
         /* discard */
         index++;
         LOGD("[discard]\n");
-        /* TODO: add tracer function */
+        tracer_discard(&(stream->tracer));
         break;
 
     case 5:

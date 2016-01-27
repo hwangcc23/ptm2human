@@ -72,6 +72,7 @@ extern void tracer_trace_info(void *t, unsigned int plctl, unsigned int info,\
                               unsigned int key, unsigned int spec,\
                               unsigned int cyct);
 extern void tracer_trace_on(void *t);
+extern void tracer_discard(void *t);
 extern void tracer_context(void *t, int p, int el, int sf, int ns, \
                            int v, unsigned int vmid,   \
                            int c, unsigned int contextid);

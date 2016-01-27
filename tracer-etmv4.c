@@ -53,6 +53,17 @@ void tracer_trace_on(void *t)
     OUTPUT("TraceOn - A discontinuity in the trace stream\n");
 }
 
+void tracer_discard(void *t)
+{
+    struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
+
+    OUTPUT("Discard\n");
+
+    /* TODO: emit conditional_flush */
+
+    CURR_SPEC_DEPTH(tracer) = 0;
+}
+
 void tracer_ts(void *t, unsigned long long timestamp, int have_cc, unsigned int count,  \
                int nr_replace)
 {
