@@ -84,6 +84,7 @@ extern void tracer_ts(void *t, unsigned long long timestamp, int have_cc, unsign
                       int nr_replace);
 extern void tracer_exception(void *t, int type);
 extern void tracer_exception_return(void *t);
+extern void tracer_cc(void *t, int unknown, unsigned int count);
 extern void tracer_commit(void *t, unsigned int commit);
 extern void tracer_cancel(void *t, int mispredict, unsigned int cancel);
 extern void tracer_mispredict(void *t, int arg);

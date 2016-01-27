@@ -114,6 +114,19 @@ void tracer_exception_return(void *t)
     /* FIXME: for ARMv6-M and ARMv7-M PEs, exception_return is a P0 element */
 }
 
+void tracer_cc(void *t, int unknown, unsigned int count)
+{
+    struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
+    unsigned long long cc;
+
+    if (unknown) {
+        OUTPUT("Cycle count - unknown\n");
+    } else {
+        cc = (unsigned long long)count + (unsigned long long)CC_THRESHOLD(tracer);
+        OUTPUT("Cycle count - %lld\n", cc);
+    }
+}
+
 void tracer_commit(void *t, unsigned int commit)
 {
     struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;

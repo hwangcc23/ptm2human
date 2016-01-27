@@ -323,6 +323,7 @@ DECL_DECODE_FN(cc_format_1)
             LOGE("More than 4 bytes of the commit section in the cycle count format 1 packet");
             return -1;
         }
+        tracer_commit(&(stream->tracer), commit);
     }
 
     if (!u_bit) {
@@ -341,27 +342,48 @@ DECL_DECODE_FN(cc_format_1)
 
     LOGD("[cycle count format 1] U = %d, COMMIT = %d, COUNT = %d\n", u_bit, commit, count);
 
-    /* TODO: add trace function */
+    tracer_cc(&(stream->tracer), u_bit, count);
 
     return index;
 }
 
 DECL_DECODE_FN(cc_format_2)
 {
-    LOGD("[cycle count format 2] F = %d, AAAA = %d, BBBB = %x\n",
-            pkt[0] & 0x01,
-            (pkt[1] & 0xf0) >> 4, (pkt[1] & 0x0f));
+    unsigned int F, AAAA, BBBB, commit;
 
-    /* TODO: add trace function */
+    F = pkt[0] & 0x01;
+    AAAA = (pkt[1] & 0xf0) >> 4;
+    BBBB = pkt[1] & 0x0f;
+    LOGD("[cycle count format 2] F = %d, AAAA = %d, BBBB = %x\n", F, AAAA, BBBB);
+
+    if (F) {
+        commit = MAX_SPEC_DEPTH(&(stream->tracer)) + AAAA - 15;
+    } else {
+        commit = AAAA + 1;
+    }
+    if (AAAA) {
+        tracer_commit(&(stream->tracer), commit);
+    }
+
+    tracer_cc(&(stream->tracer), 0, BBBB);
 
     return 2;
 }
 
 DECL_DECODE_FN(cc_format_3)
 {
-    LOGD("[cycle count format 3] AA = %d, BB = %x\n", (pkt[0] & 0x0c) >> 2, (pkt[0] & 0x03));
+    unsigned int AA, BB;
 
-    /* TODO: add trace function */
+    AA = (pkt[0] & 0x0c) >> 2;
+    BB = (pkt[0] & 0x03);
+    LOGD("[cycle count format 3] AA = %d, BB = %x\n", AA, BB);
+
+    /* FIXME: need to get TRCIDR0.COMMOPT */
+    if (1) {
+        tracer_commit(&(stream->tracer), AA + 1);
+    }
+
+    tracer_cc(&(stream->tracer), 0, BB);
 
     return 1;
 }
