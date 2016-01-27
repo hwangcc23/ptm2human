@@ -64,6 +64,17 @@ void tracer_discard(void *t)
     CURR_SPEC_DEPTH(tracer) = 0;
 }
 
+void tracer_overflow(void *t)
+{
+    struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
+
+    OUTPUT("Discard\n");
+
+    /* TODO: emit conditional_flush */
+
+    CURR_SPEC_DEPTH(tracer) = 0;
+}
+
 void tracer_ts(void *t, unsigned long long timestamp, int have_cc, unsigned int count,  \
                int nr_replace)
 {

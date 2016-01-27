@@ -100,7 +100,7 @@ DECL_DECODE_FN(extension)
         /* overflow */
         index++;
         LOGD("[overflow]\n");
-        /* TODO: add tracer function */
+        tracer_overflow(&(stream->tracer));
         break;
 
     default:
