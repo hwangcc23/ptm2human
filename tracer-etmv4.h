@@ -89,6 +89,7 @@ extern void tracer_commit(void *t, unsigned int commit);
 extern void tracer_cancel(void *t, int mispredict, unsigned int cancel);
 extern void tracer_mispredict(void *t, int arg);
 extern void tracer_cond_inst(void *t, int format, unsigned int param1, unsigned int param2);
+extern void tracer_cond_flush(void *t);
 extern void tracer_context(void *t, int p, int el, int sf, int ns, \
                            int v, unsigned int vmid,   \
                            int c, unsigned int contextid);

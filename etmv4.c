@@ -556,7 +556,7 @@ DECL_DECODE_FN(cond_flush)
 {
     LOGD("[conditional flush]\n");
 
-    /* TODO: add trace function */
+    tracer_cond_flush(&(stream->tracer));
 
     return 1;
 }

@@ -242,6 +242,11 @@ void tracer_cond_inst(void *t, int format, unsigned int param1, unsigned int par
     }
 }
 
+void tracer_cond_flush(void *t)
+{
+    OUTPUT("Conditional flush\n");
+}
+
 void tracer_context(void *t, int p, int el, int sf, int ns, \
                     int v, unsigned int vmid,   \
                     int c, unsigned int contextid)
