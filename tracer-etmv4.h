@@ -41,6 +41,9 @@ struct etmv4_tracer
     unsigned int sixty_four_bit:1;
     unsigned int curr_spec_depth;
     unsigned int p0_key;
+    unsigned int cond_c_key;
+    unsigned int cond_r_key;
+    unsigned int cond_key_max_incr;
     unsigned int max_spec_depth;
     unsigned int cc_threshold;
 };
@@ -64,6 +67,9 @@ struct etmv4_tracer
 #define SIXTY_FOUR_BIT(t) (((struct etmv4_tracer *)(t))->sixty_four_bit)
 #define CURR_SPEC_DEPTH(t) (((struct etmv4_tracer *)(t))->curr_spec_depth)
 #define P0_KEY(t) (((struct etmv4_tracer *)(t))->p0_key)
+#define COND_C_KEY(t) (((struct etmv4_tracer *)(t))->cond_c_key)
+#define COND_R_KEY(t) (((struct etmv4_tracer *)(t))->cond_r_key)
+#define COND_KEY_MAX_INCR(t) (((struct etmv4_tracer *)(t))->cond_key_max_incr)
 #define MAX_SPEC_DEPTH(t) (((struct etmv4_tracer *)(t))->max_spec_depth)
 #define CC_THRESHOLD(t) (((struct etmv4_tracer *)(t))->cc_threshold)
 
@@ -74,12 +80,6 @@ extern void tracer_trace_info(void *t, unsigned int plctl, unsigned int info,\
 extern void tracer_trace_on(void *t);
 extern void tracer_discard(void *t);
 extern void tracer_overflow(void *t);
-extern void tracer_context(void *t, int p, int el, int sf, int ns, \
-                           int v, unsigned int vmid,   \
-                           int c, unsigned int contextid);
-extern void tracer_address(void *t);
-extern void tracer_atom(void *t, int type);
-extern void tracer_q(void *t, unsigned int count);
 extern void tracer_ts(void *t, unsigned long long timestamp, int have_cc, unsigned int count,\
                       int nr_replace);
 extern void tracer_exception(void *t, int type);
@@ -88,5 +88,12 @@ extern void tracer_cc(void *t, int unknown, unsigned int count);
 extern void tracer_commit(void *t, unsigned int commit);
 extern void tracer_cancel(void *t, int mispredict, unsigned int cancel);
 extern void tracer_mispredict(void *t, int arg);
+extern void tracer_cond_inst(void *t, int format, unsigned int param1, unsigned int param2);
+extern void tracer_context(void *t, int p, int el, int sf, int ns, \
+                           int v, unsigned int vmid,   \
+                           int c, unsigned int contextid);
+extern void tracer_address(void *t);
+extern void tracer_atom(void *t, int type);
+extern void tracer_q(void *t, unsigned int count);
 
 #endif

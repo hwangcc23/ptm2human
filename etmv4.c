@@ -522,7 +522,7 @@ DECL_DECODE_FN(cond_inst_format_1)
     }
     LOGD("[conditional instruction format 1] key = %d\n", key);
 
-    /* TODO: add trace function */
+    tracer_cond_inst(&(stream->tracer), 1, key, 0);
 
     return index;
 }
@@ -534,7 +534,7 @@ DECL_DECODE_FN(cond_inst_format_2)
     ci = pkt[0] & 0x03;
     LOGD("[conditional instruction format 2] ci = %d\n", ci);
 
-    /* TODO: add trace function */
+    tracer_cond_inst(&(stream->tracer), 2, ci, 0);
 
     return 1;
 }
@@ -547,7 +547,7 @@ DECL_DECODE_FN(cond_inst_format_3)
     num = (pkt[1] & 0x7E) >> 1;
     LOGD("[conditional instruction format 3] z = %d, num = %d\n", z, num);
 
-    /* TODO: add trace function */
+    tracer_cond_inst(&(stream->tracer), 3, z, num);
 
     return 2;
 }

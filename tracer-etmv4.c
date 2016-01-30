@@ -152,11 +152,11 @@ void tracer_cancel(void *t, int mispredict, unsigned int cancel)
     }
 }
 
-void tracer_mispredict(void *t, int arg)
+void tracer_mispredict(void *t, int param)
 {
     struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
 
-    switch (arg) {
+    switch (param) {
     case 0:
         break;
 
@@ -174,11 +174,72 @@ void tracer_mispredict(void *t, int arg)
         break;
 
     default:
-        LOGE("Invalid argument to tracer_mispredict\n");
+        LOGE("Invalid param (%d)\n", param);
         break;
     }
 
     OUTPUT("Mispredict\n");
+}
+
+static int __is_cond_key_special(struct etmv4_tracer *tracer, unsigned int key)
+{
+    /* TODO: initialize COND_KEY_MAX_INCR */
+    return (key >= COND_KEY_MAX_INCR(tracer))? 1: 0;
+}
+
+void tracer_cond_inst(void *t, int format, unsigned int param1, unsigned int param2)
+{
+    struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
+    unsigned int key;
+    int ci, i, z, num;
+
+    switch (format) {
+    case 1:
+        key = param1;
+        if (__is_cond_key_special(tracer, key)) {
+            COND_C_KEY(tracer)++;
+            COND_C_KEY(tracer) %= COND_KEY_MAX_INCR(tracer);
+        } else {
+            COND_C_KEY(tracer) = key;
+        }
+        OUTPUT("Conditional instruction - C key = %d\n", key);
+        break;
+
+    case 2:
+        ci = param1;
+        if (ci == 0) {
+            COND_C_KEY(tracer)++;
+            COND_C_KEY(tracer) %= COND_KEY_MAX_INCR(tracer);
+            OUTPUT("Conditional instruction - C key = %d\n", COND_C_KEY(tracer));
+        } else if (ci == 1) {
+            OUTPUT("Conditional instruction - C key = %d\n", COND_C_KEY(tracer));
+        } else if (ci == 2) {
+            COND_C_KEY(tracer)++;
+            COND_C_KEY(tracer) %= COND_KEY_MAX_INCR(tracer);
+            OUTPUT("Conditional instruction - C key = %d\n", COND_C_KEY(tracer));
+            OUTPUT("Conditional instruction - C key = %d\n", COND_C_KEY(tracer));
+        } else {
+            LOGE("Invalid CI (%d)\n", ci);
+        }
+        break;
+
+    case 3:
+        z = param1;
+        num = param2;
+        for (i = 1; i < num; i++) {
+            COND_C_KEY(tracer)++;
+            COND_C_KEY(tracer) %= COND_KEY_MAX_INCR(tracer);
+            OUTPUT("Conditional instruction - C key = %d\n", COND_C_KEY(tracer));
+        }
+        if (z) {
+            OUTPUT("Conditional instruction - C key = %d\n", COND_C_KEY(tracer));
+        }
+        break;
+
+    default:
+        LOGE("Invalid format (%d)\n", format);
+        break;
+    }
 }
 
 void tracer_context(void *t, int p, int el, int sf, int ns, \
