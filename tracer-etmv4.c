@@ -59,7 +59,7 @@ void tracer_discard(void *t)
 
     OUTPUT("Discard\n");
 
-    /* TODO: emit conditional_flush */
+    tracer_cond_flush(tracer);
 
     CURR_SPEC_DEPTH(tracer) = 0;
 }
@@ -70,7 +70,7 @@ void tracer_overflow(void *t)
 
     OUTPUT("Discard\n");
 
-    /* TODO: emit conditional_flush */
+    tracer_cond_flush(tracer);
 
     CURR_SPEC_DEPTH(tracer) = 0;
 }
@@ -97,7 +97,7 @@ void tracer_exception(void *t, int type)
 
     OUTPUT("Exception - exception type %s, address 0x%016llx\n", (type < 32 && exp_name[type])? exp_name[type]: "Reserved", ADDRESS_REGISTER(tracer)[0].address);
 
-    /* TODO: emit conditional_flush */
+    tracer_cond_flush(tracer);
 
     /* TODO: p0_key = (p0_key + 1) % p0_max_key */
 
@@ -148,7 +148,7 @@ void tracer_cancel(void *t, int mispredict, unsigned int cancel)
 
     if (mispredict) {
         tracer_mispredict(tracer, 0);
-        /* TODO: emit conditional_flush */
+        tracer_cond_flush(tracer);
     }
 }
 
