@@ -253,7 +253,7 @@ void tracer_cond_inst(void *t, int format, unsigned int param1, unsigned int par
     case 3:
         z = param1;
         num = param2;
-        for (i = 1; i < num; i++) {
+        for (i = 0; i < num; i++) {
             COND_C_KEY(tracer)++;
             COND_C_KEY(tracer) %= COND_KEY_MAX_INCR(tracer);
             OUTPUT("Conditional instruction - C key = %d\n", COND_C_KEY(tracer));
