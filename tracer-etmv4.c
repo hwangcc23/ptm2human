@@ -22,6 +22,33 @@
 #include "output.h"
 #include "log.h"
 
+static const char *cond_result_token_apsr[] = 
+{
+    "C flag set",
+    "N flag set",
+    "Z and C flags set",
+    "N and C flags set",
+    "unknown",
+    "unknown",
+    "unknown",
+    "No flag set",
+    "unknown",
+    "unknown",
+    "unknown",
+    "Z flag set",
+    "unknown",
+    "unknown",
+    "unknown",
+    "unknown"
+};
+
+static const char *cond_result_token_pass_fail[] =
+{
+    "failed the condition code check",
+    "passed the condition code check",
+    "don't know the result of the condition code check"
+};
+
 static const char *exp_name[32] = { "PE reset", "Debug halt", "Call", "Trap",
                                     "System error", NULL, "Inst debug", "Data debug",
                                     NULL, NULL, "Alignment", "Inst fault",
@@ -81,11 +108,11 @@ void tracer_ts(void *t, unsigned long long timestamp, int have_cc, unsigned int 
     struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
 
     if (!timestamp) {
-        TRACE_TIMESTAMP(tracer) &= ~((1LL << nr_replace) - 1);
-        TRACE_TIMESTAMP(tracer) |= timestamp;
+        TIMESTAMP(tracer) &= ~((1LL << nr_replace) - 1);
+        TIMESTAMP(tracer) |= timestamp;
     }
 
-    OUTPUT("Timestamp - %lld\n", TRACE_TIMESTAMP(tracer));
+    OUTPUT("Timestamp - %lld\n", TIMESTAMP(tracer));
     if (have_cc) {
         OUTPUT("            (number of cycles between the most recent Cycle Count element %d)\n", count);
     }
@@ -245,6 +272,136 @@ void tracer_cond_inst(void *t, int format, unsigned int param1, unsigned int par
 void tracer_cond_flush(void *t)
 {
     OUTPUT("Conditional flush\n");
+}
+
+/*
+ * __interpret_tokens: Interpret tokens for conditional result elements
+ * @tracer: pointer to the etmv4_tracer structure
+ * @tokens: tokens to interpret
+ * @pos: start position in tokens
+ * Return the next position for the next token, or 0 for Null (no R element indicated)
+ */
+static int __interpret_tokens(struct etmv4_tracer *tracer, unsigned int tokens, int pos)
+{
+    unsigned char token;
+
+    if (pos % 2) {
+        LOGE("Invalid pos\n");
+        return pos + 1;
+    }
+
+    /* TODO: initialize CONDTYPE */
+    if (CONDTYPE(tracer)) {
+        token = (tokens >> pos) & 0x0F;
+        if ((token & 0x03) == 0x03) {
+            /* 2-bit tokens */
+            return pos + 2;
+        } else {
+            /* 4-bit otkens */
+            if (token == 0x0F) {
+                /* NULL, no R element indicated */
+                return 0;
+            } else {
+                return pos + 4;
+            }
+        }
+    } else {
+        token = (tokens >> pos) & 0x03;
+        if (token == 3) {
+            /* NULL, no R element indicated */
+            return 0;
+        } else {
+            return pos + 2;
+        }
+    }
+}
+
+void tracer_cond_result(void *t, int format, unsigned int param1, \
+                        unsigned int param2, unsigned int param3)
+{
+    struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
+    unsigned int key, ci, result, k, tokens, token;
+    int pos, next_pos;
+    const int MAX_TOKENS_POS = 12;
+
+    switch (format) {
+    case 1:
+        key = param1;
+        ci = param2;
+        result = param3;
+        if (__is_cond_key_special(tracer, key)) {
+            COND_R_KEY(tracer)++;
+            COND_R_KEY(tracer) %= COND_KEY_MAX_INCR(tracer);
+        } else {
+            COND_R_KEY(tracer) = key;
+        }
+        if (ci) {
+            do {
+                tracer_cond_inst(tracer, 3, 0, 1);
+            } while (COND_C_KEY(tracer) == COND_R_KEY(tracer));
+        }
+        if (CONDTYPE(tracer)) {
+            OUTPUT("Conditional result - R key = %d, APSR_V = %d, APSR_C = %d, APSR_Z = %d, APSR_N = %d\n", \
+                    key, result & 0x01, result & 0x02, result & 0x04, result & 0x08);
+        } else {
+            OUTPUT("Conditional result - R key = %d, %s the condition code check\n", \
+                    key, (result)? "passed": "failed");
+        }
+        break;
+
+    case 2:
+        k = param1 & 0x01;
+        token = param2 & 0x03;
+        COND_R_KEY(tracer) += 1 + k;
+        COND_R_KEY(tracer) %= COND_KEY_MAX_INCR(tracer);
+        do {
+            tracer_cond_inst(tracer, 3, 0, 1);
+        } while (COND_C_KEY(tracer) == COND_R_KEY(tracer));
+        if (CONDTYPE(tracer)) {
+            OUTPUT("Conditional result - R key = %d, APSR indication: %s\n", \
+                    COND_R_KEY(tracer), cond_result_token_apsr[token]);
+        } else {
+            OUTPUT("Conditional result - R key = %d, %s\n", \
+                    COND_R_KEY(tracer), cond_result_token_pass_fail[token]);
+        }
+        break;
+
+    case 3:
+        tokens = param1 & 0x0FFF;
+        pos = 0;
+        do {
+            next_pos = __interpret_tokens(tracer, tokens, pos);
+            if (!next_pos) {
+                token = (tokens & ((1 << next_pos) - 1)) >> pos;
+                if (CONDTYPE(tracer)) {
+                    OUTPUT("Conditional result - R key = %d, APSR indication: %s\n", \
+                            COND_R_KEY(tracer), cond_result_token_apsr[token]);
+                } else {
+                    OUTPUT("Conditional result - R key = %d, %s\n", \
+                            COND_R_KEY(tracer), cond_result_token_pass_fail[token]);
+                }
+                pos = next_pos;
+            }
+        } while (next_pos != 0 || pos < MAX_TOKENS_POS);
+        break;
+
+    case 4:
+        token = param1 & 0x03;
+        COND_R_KEY(tracer)--;
+        COND_R_KEY(tracer) %= COND_KEY_MAX_INCR(tracer);
+        if (CONDTYPE(tracer)) {
+            OUTPUT("Conditional result - R key = %d, APSR indication: %s\n", \
+                    COND_R_KEY(tracer), cond_result_token_apsr[token]);
+        } else {
+            OUTPUT("Conditional result - R key = %d, %s\n", \
+                    COND_R_KEY(tracer), cond_result_token_pass_fail[token]);
+        }
+        break;
+
+    default:
+        LOGE("Invalid format (%d)\n", format);
+        break;
+    }
 }
 
 void tracer_context(void *t, int p, int el, int sf, int ns, \

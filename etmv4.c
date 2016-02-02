@@ -565,16 +565,17 @@ DECL_DECODE_FN(cond_result_format_1)
 {
     int index = 0, nr_payloads, payload, i;
     unsigned char data;
-    unsigned int result[2], key[2];
+    unsigned int CI, RESULT, KEY;
 
     nr_payloads = (pkt[index++] & 0x4)? 1: 2;
 
     for (payload = 0; payload < nr_payloads; payload++) {
-        result[payload] = pkt[index] & 0x0f;
-        key[payload] = (pkt[index] >> 4) & 0x7;
+        CI = (payload == 0)? (pkt[0] & 0x1): ((pkt[1] & 0x2) >> 1),
+        RESULT = pkt[index] & 0x0f;
+        KEY = (pkt[index] >> 4) & 0x7;
         for (index++, i = 0; i < 5; i++) {
             data = pkt[index++];
-            key[payload] |= (data & ~c_bit) << (7 * i + 3);
+            KEY |= (data & ~c_bit) << (7 * i + 3);
             if (!(data & c_bit)) {
                 break;
             }
@@ -583,44 +584,50 @@ DECL_DECODE_FN(cond_result_format_1)
             LOGE("More than 5 payload bytes in the conditional result format 1 packet");
             return -1;
         }
-        LOGD("[conditional result format 1] ci[%d] = %d, result[%d] = 0x%X, key[%d] = %d\n",
-                payload, (payload == 0)? (pkt[0] & 0x1): ((pkt[1] & 0x2) >> 1),
-                payload, result[payload],
-                payload, key[payload]);
-    }
+        LOGD("[conditional result format 1] CI[%d] = %d, RESULT[%d] = 0x%X, KEY[%d] = %d\n",
+                payload, CI,
+                payload, RESULT,
+                payload, KEY);
 
-    /* TODO: add trace function */
+        tracer_cond_result(&(stream->tracer), 1, KEY, CI, RESULT);
+    }
 
     return index;
 }
 
 DECL_DECODE_FN(cond_result_format_2)
 {
-    LOGD("[conditional result format 2] k = %d, t = 0x%X\n",
-            (pkt[0] >> 2) & 0x1,
-            (pkt[0] & 0x3));
+    unsigned int K, T;
 
-    /* TODO: add trace function */
+    K = (pkt[0] >> 2) & 0x1;
+    T = (pkt[0] & 0x3);
+    LOGD("[conditional result format 2] K = %d, T = 0x%X\n", K, T);
+
+    tracer_cond_result(&(stream->tracer), 2, K, T, 0);
 
     return 1;
 }
 
 DECL_DECODE_FN(cond_result_format_3)
 {
-    LOGD("[conditional result format 3] token = 0x%X\n",
-            pkt[1] | ((pkt[0] & 0x0F) << 8));
+    unsigned int TOKEN;
 
-    /* TODO: add trace function */
+    TOKEN = pkt[1] | ((pkt[0] & 0x0F) << 8);
+    LOGD("[conditional result format 3] TOKEN = 0x%X\n", TOKEN);
+
+    tracer_cond_result(&(stream->tracer), 3, TOKEN, 0, 0);
 
     return 2;
 }
 
 DECL_DECODE_FN(cond_result_format_4)
 {
-    LOGD("[conditional result format 4] t = 0x%X\n",
-            (pkt[0] & 0x3));
+    unsigned int T;
 
-    /* TODO: add trace function */
+    T = (pkt[0] & 0x3);
+    LOGD("[conditional result format 4] T = 0x%X\n", T);
+
+    tracer_cond_result(&(stream->tracer), 4, T, 0, 0);
 
     return 1;
 }

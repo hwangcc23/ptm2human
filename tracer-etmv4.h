@@ -19,6 +19,8 @@
 #ifndef _TRACER_ETMV4_H
 #define _TRACER_ETMV4_H
 
+enum { CONDTYPE_PASS_FAIL = 0, CONDTYPE_APSR = 1 };
+
 enum { ADDR_REG_IS_UNKNOWN = -1, ADDR_REG_IS0 = 0, ADDR_REG_IS1 = 1 };
 
 enum { ATOM_TYPE_E = 1, ATOM_TYPE_N = 2 };
@@ -31,7 +33,16 @@ struct address_register
 
 struct etmv4_tracer
 {
+    /* exactly the INFO field value in the TraceInfo packet */
     unsigned int info;
+
+    /* Conditional tracing field. The Permitted values are:
+       CONDTYPE_PASS_FAIL - Indicate if a conditional instruction passes or fails its check
+       CONDTYPE_APSR      - Provide the value of the APSR condition flags
+     */
+    int condtype;
+
+    /* Trace analyzer state between receiving packets */
     unsigned long long timestamp;
     struct address_register address_register[3];
     unsigned int context_id;
@@ -49,7 +60,8 @@ struct etmv4_tracer
 };
 
 #define TRACE_INFO(t) (((struct etmv4_tracer *)(t))->info)
-#define TRACE_TIMESTAMP(t) (((struct etmv4_tracer *)(t))->timestamp)
+#define CONDTYPE(t) (((struct etmv4_tracer *)(t))->condtype)
+#define TIMESTAMP(t) (((struct etmv4_tracer *)(t))->timestamp)
 #define ADDRESS_REGISTER(t) ((struct etmv4_tracer *)(t))->address_register
 #define RESET_ADDRESS_REGISTER(t)   \
         do {    \
@@ -90,6 +102,7 @@ extern void tracer_cancel(void *t, int mispredict, unsigned int cancel);
 extern void tracer_mispredict(void *t, int arg);
 extern void tracer_cond_inst(void *t, int format, unsigned int param1, unsigned int param2);
 extern void tracer_cond_flush(void *t);
+extern void tracer_cond_result(void *t, int format, unsigned int param1, unsigned int param2, unsigned int param3);
 extern void tracer_context(void *t, int p, int el, int sf, int ns, \
                            int v, unsigned int vmid,   \
                            int c, unsigned int contextid);
