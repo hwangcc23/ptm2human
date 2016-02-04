@@ -126,10 +126,17 @@ void tracer_exception(void *t, int type)
 
     tracer_cond_flush(tracer);
 
-    /* TODO: p0_key = (p0_key + 1) % p0_max_key */
+    /*
+     * If p0_key_max is zero, it implies that the target CPU uses no P0 right-hand keys.
+     * If so, there is no need to update p0_key.
+     */
+    if (P0_KEY_MAX(tracer)) {
+        P0_KEY(tracer)++;
+        P0_KEY(tracer) %= P0_KEY_MAX(tracer);
+    }
 
     CURR_SPEC_DEPTH(tracer)++;
-    if (CURR_SPEC_DEPTH(tracer) > MAX_SPEC_DEPTH(tracer)) {
+    if (!MAX_SPEC_DEPTH(tracer) || (CURR_SPEC_DEPTH(tracer) > MAX_SPEC_DEPTH(tracer))) {
         tracer_commit(tracer, 1);
     }
 }
@@ -171,7 +178,14 @@ void tracer_cancel(void *t, int mispredict, unsigned int cancel)
 
     CURR_SPEC_DEPTH(tracer) -= cancel;
 
-    /* TODO: p0_key = (p0_key - cancel) % p0_max_key */
+    /*
+     * If p0_key_max is zero, it implies that the target CPU uses no P0 right-hand keys.
+     * If so, there is no need to update p0_key.
+     */
+    if (P0_KEY_MAX(tracer)) {
+        P0_KEY(tracer) -= cancel;
+        P0_KEY(tracer) %= P0_KEY_MAX(tracer);
+    }
 
     if (mispredict) {
         tracer_mispredict(tracer, 0);
@@ -459,11 +473,18 @@ void tracer_atom(void *t, int type)
         return ;
     }
 
-    /* TODO: p0_key = (p0_key + 1) % p0_max_key */
+    /*
+     * If p0_key_max is zero, it implies that the target CPU uses no P0 right-hand keys.
+     * If so, there is no need to update p0_key.
+     */
+    if (P0_KEY_MAX(tracer)) {
+        P0_KEY(tracer)++;
+        P0_KEY(tracer) %= P0_KEY_MAX(tracer);
+    }
 
     CURR_SPEC_DEPTH(tracer)++;
     /* TODO: initialize MAX_SPEC_DEPTH */
-    if (CURR_SPEC_DEPTH(tracer) > MAX_SPEC_DEPTH(tracer)) {
+    if (!MAX_SPEC_DEPTH(tracer) || (CURR_SPEC_DEPTH(tracer) > MAX_SPEC_DEPTH(tracer))) {
         tracer_commit(tracer, 1);
     }
 }
@@ -478,10 +499,17 @@ void tracer_q(void *t, unsigned int count)
         OUTPUT("Q - UNKNOWN of instructions\n");
     }
 
-    /* TODO: p0_key = (p0_key + 1) % p0_max_key */
+    /*
+     * If p0_key_max is zero, it implies that the target CPU uses no P0 right-hand keys.
+     * If so, there is no need to update p0_key.
+     */
+    if (P0_KEY_MAX(tracer)) {
+        P0_KEY(tracer)++;
+        P0_KEY(tracer) %= P0_KEY_MAX(tracer);
+    }
 
     CURR_SPEC_DEPTH(tracer)++;
-    if (CURR_SPEC_DEPTH(tracer) > MAX_SPEC_DEPTH(tracer)) {
+    if (!MAX_SPEC_DEPTH(tracer) || (CURR_SPEC_DEPTH(tracer) > MAX_SPEC_DEPTH(tracer))) {
         tracer_commit(tracer, 1);
     }
 }

@@ -1221,6 +1221,8 @@ int etmv4_synchronization(struct stream *stream)
     int i, p;
     unsigned char c;
 
+    LOGD("P0_KEY_MAX = %d\n", P0_KEY_MAX(&(stream->tracer)));
+
     /* locate an async packet and search for a trace-info packet */
     for (i = 0; i < stream->buff_len; i++) {
         c = stream->buff[i];

@@ -54,6 +54,7 @@ struct etmv4_tracer
     unsigned int p0_key;
     unsigned int cond_c_key;
     unsigned int cond_r_key;
+    unsigned int p0_key_max;
     unsigned int cond_key_max_incr;
     unsigned int max_spec_depth;
     unsigned int cc_threshold;
@@ -81,10 +82,10 @@ struct etmv4_tracer
 #define P0_KEY(t) (((struct etmv4_tracer *)(t))->p0_key)
 #define COND_C_KEY(t) (((struct etmv4_tracer *)(t))->cond_c_key)
 #define COND_R_KEY(t) (((struct etmv4_tracer *)(t))->cond_r_key)
+#define P0_KEY_MAX(t) (((struct etmv4_tracer *)(t))->p0_key_max)
 #define COND_KEY_MAX_INCR(t) (((struct etmv4_tracer *)(t))->cond_key_max_incr)
 #define MAX_SPEC_DEPTH(t) (((struct etmv4_tracer *)(t))->max_spec_depth)
 #define CC_THRESHOLD(t) (((struct etmv4_tracer *)(t))->cc_threshold)
-
 
 extern void tracer_trace_info(void *t, unsigned int plctl, unsigned int info,\
                               unsigned int key, unsigned int spec,\

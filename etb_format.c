@@ -28,24 +28,24 @@
 #define ETB_PACKET_SIZE 16
 #define NULL_TRACE_SOURCE 0
 
-static int init_stream(struct stream *stream, int buff_len, \
-            int cycle_accurate, int contextid_size)
+static int init_stream(struct stream *stream, struct stream *parent)
 {
     if (!stream) {
         LOGE("Invalid stream pointer\n");
         return -1;
     }
 
-    memset(stream, 0, sizeof(struct stream));
+    memcpy(stream, parent, sizeof(struct stream));
 
-    IS_CYC_ACC(&(stream->tracer)) = cycle_accurate;
-    CONTEXTID_SIZE(&(stream->tracer)) = contextid_size;
-    stream->buff = malloc(buff_len);
+    stream->buff_len  = 0;
+
+    stream->buff = malloc(parent->buff_len);
     if (!(stream->buff)) {
         LOGE("Fail to allocate memory (%s)\n", strerror(errno));
         return -1;
     }
-    memset((void *)stream->buff, 0, stream->buff_len);
+
+    memset((void *)stream->buff, 0, parent->buff_len);
 
     return 0;
 }
@@ -70,8 +70,7 @@ int decode_etb_stream(struct stream *etb_stream)
         LOGE("Fail to allocate stream (%s)\n", strerror(errno));
         return -1;
     }
-    if (init_stream(stream, etb_stream->buff_len,
-            IS_CYC_ACC(&(etb_stream->tracer)), CONTEXTID_SIZE(&(etb_stream->tracer)))) {
+    if (init_stream(stream, etb_stream)) {
         return -1;
     }
 
@@ -125,9 +124,7 @@ int decode_etb_stream(struct stream *etb_stream)
                             return -1;
                         }
                         for (i = (nr_stream - nr_new); i < nr_stream; i++) {
-                            if (init_stream(&(stream[i]), etb_stream->buff_len, \
-                                    IS_CYC_ACC(&(etb_stream->tracer)),   \
-                                    CONTEXTID_SIZE(&(etb_stream->tracer)))) {
+                            if (init_stream(&(stream[i]), etb_stream)) {
                                 LOGE("Fail to init stream %d\n", i);
                                 return -1;
                             }

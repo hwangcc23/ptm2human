@@ -38,13 +38,14 @@ static const struct option options[] =
     { "context", 1, 0, 'c' },
     { "cycle-accurate", 0, 0, 'C' },
     { "decode-ptm", 0, 0, 'p' },
+    { "trcidr9", 1, 0, '9' },
     { "decode-etmv4", 0, 0, 'e' },
     { "debuglog", 0, 0, 'd' },
     { "help", 0, 0, 'h' },
     { NULL, 0, 0, 0   },
 };
 
-static const char *optstring = "i:c:Cpedh";
+static const char *optstring = "i:c:Cp9:edh";
 
 void usage(void)
 {
@@ -54,7 +55,8 @@ void usage(void)
     printf("  -p|--decode-ptm (default option)        Decode PTM trace\n");
     printf("  -c|--context <context ID size>          Give the size of ContextID for PTM trace only\n");
     printf("  -C|--cycle-accurate                     Enable Cycle-Accurate for PTM trace only\n\n");
-    printf("  -e|--decode-etmv4                       Decode ETMv4 trace\n\n");
+    printf("  -e|--decode-etmv4                       Decode ETMv4 trace\n");
+    printf("  -9|--trcidr9 <TRCIDR9 value>            Give the value of TRCIDR9 on the target CPU which indicates p0_key_max\n\n");
     printf("  -d|--debuglog                           Enable debug messages\n");
     printf("  -h|--help                               Show help messages\n");
 }
@@ -138,6 +140,10 @@ int main(int argc, char **argv)
                 LOGE("Use either --decode_ptm or --decode_etmv4\n");
                 return EXIT_FAILURE;
             }
+            break;
+
+        case '9':
+            P0_KEY_MAX(&(stream.tracer)) = atoi(optarg);
             break;
 
         case 'd':
