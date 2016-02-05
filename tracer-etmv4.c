@@ -483,7 +483,6 @@ void tracer_atom(void *t, int type)
     }
 
     CURR_SPEC_DEPTH(tracer)++;
-    /* TODO: initialize MAX_SPEC_DEPTH */
     if (!MAX_SPEC_DEPTH(tracer) || (CURR_SPEC_DEPTH(tracer) > MAX_SPEC_DEPTH(tracer))) {
         tracer_commit(tracer, 1);
     }
