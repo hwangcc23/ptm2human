@@ -224,7 +224,6 @@ void tracer_mispredict(void *t, int param)
 
 static int __is_cond_key_special(struct etmv4_tracer *tracer, unsigned int key)
 {
-    /* TODO: initialize COND_KEY_MAX_INCR */
     return (key >= COND_KEY_MAX_INCR(tracer))? 1: 0;
 }
 
@@ -233,6 +232,11 @@ void tracer_cond_inst(void *t, int format, unsigned int param1, unsigned int par
     struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
     unsigned int key;
     int ci, i, z, num;
+
+    if (COND_KEY_MAX_INCR(tracer) == 0) {
+        LOGE("cond_key_max_incr MUST NOT be zero for conditional instruction elements. Set it via input argrments --trcidr12 and --trcidr13\n");
+        return ;
+    }
 
     switch (format) {
     case 1:
@@ -337,6 +341,11 @@ void tracer_cond_result(void *t, int format, unsigned int param1, \
     unsigned int key, ci, result, k, tokens, token;
     int pos, next_pos;
     const int MAX_TOKENS_POS = 12;
+
+    if (COND_KEY_MAX_INCR(tracer) == 0) {
+        LOGE("cond_key_max_incr MUST NOT be zero for conditional instruction elements. Set it via input argrments --trcidr12 and --trcidr13\n");
+        return ;
+    }
 
     switch (format) {
     case 1:

@@ -40,13 +40,15 @@ static const struct option options[] =
     { "decode-ptm", 0, 0, 'p' },
     { "trcidr8", 1, 0, '8' },
     { "trcidr9", 1, 0, '9' },
+    { "trcidr12", 1, 0, '2' },
+    { "trcidr13", 1, 0, '3' },
     { "decode-etmv4", 0, 0, 'e' },
     { "debuglog", 0, 0, 'd' },
     { "help", 0, 0, 'h' },
     { NULL, 0, 0, 0   },
 };
 
-static const char *optstring = "i:c:Cp8:9:edh";
+static const char *optstring = "i:c:Cp8:9:2:3:edh";
 
 void usage(void)
 {
@@ -57,8 +59,10 @@ void usage(void)
     printf("  -c|--context <context ID size>          Give the size of ContextID for PTM trace only\n");
     printf("  -C|--cycle-accurate                     Enable Cycle-Accurate for PTM trace only\n\n");
     printf("  -e|--decode-etmv4                       Decode ETMv4 trace\n");
-    printf("  -8|--trcidr8 <TRCIDR8 value>            Give the value of TRCIDR8 on the target CPU which indicates max speculation depth\n");
-    printf("  -9|--trcidr9 <TRCIDR9 value>            Give the value of TRCIDR9 on the target CPU which indicates p0_key_max\n\n");
+    printf("  -8|--trcidr8 <TRCIDR8 value>            Give the value of TRCIDR8 which indicates max speculation depth\n");
+    printf("  -9|--trcidr9 <TRCIDR9 value>            Give the value of TRCIDR9 which indicates p0_key_max\n");
+    printf("  -2|--trcidr12 <TRCIDR12 value>          Give the value of TRCIDR12 which indicates the number of right-hand keys for cond-inst elements\n");
+    printf("  -3|--trcidr13 <TRCIDR13 value>          Give the value of TRCIDR13 which indicates the number of special right-hand keys for cond-inst elements\n\n");
     printf("  -d|--debuglog                           Enable debug messages\n");
     printf("  -h|--help                               Show help messages\n");
 }
@@ -96,6 +100,7 @@ int file2buff(const char *input_file, const char *buff, unsigned int buff_len)
 int main(int argc, char **argv)
 {
     int longindex, c, ret, pkttype = -1;
+    unsigned int trcidr12 = 0, trcidr13 = 0;
     const char *input_file = NULL;
     struct stream stream;
     struct stat sb;
@@ -152,6 +157,14 @@ int main(int argc, char **argv)
             P0_KEY_MAX(&(stream.tracer)) = atoi(optarg);
             break;
 
+        case '2':
+            trcidr12 = atoi(optarg);
+            break;
+
+        case '3':
+            trcidr13 = atoi(optarg);
+            break;
+
         case 'd':
             debuglog_on = 1;
             break;
@@ -189,6 +202,14 @@ int main(int argc, char **argv)
         LOGE("Invalid context ID size %d\n", CONTEXTID_SIZE(&(stream.tracer)));
         return EXIT_FAILURE;
         break;
+    }
+
+    /* validate trcidr12 and trcidr13 */
+    if (trcidr12 < trcidr13) {
+        LOGE("Invalid TRCIDR12/TRCIDR13: TRCIDR12 (%d) < TRCIDR13 (%d)\n", trcidr12, trcidr13);
+        return EXIT_FAILURE;
+    } else {
+        COND_KEY_MAX_INCR(&(stream.tracer)) = trcidr12 - trcidr13;
     }
 
     ret = stat(input_file, &sb);

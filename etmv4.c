@@ -1223,6 +1223,7 @@ int etmv4_synchronization(struct stream *stream)
 
     LOGD("MAX_SPEC_DEPTH = %d\n", MAX_SPEC_DEPTH(&(stream->tracer)));
     LOGD("P0_KEY_MAX = %d\n", P0_KEY_MAX(&(stream->tracer)));
+    LOGD("COND_KEY_MAX_INCR = %d\n", COND_KEY_MAX_INCR(&(stream->tracer)));
 
     /* locate an async packet and search for a trace-info packet */
     for (i = 0; i < stream->buff_len; i++) {
