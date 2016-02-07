@@ -62,7 +62,7 @@ void usage(void)
     printf("  -e|--decode-etmv4                       Decode ETMv4 trace\n");
     printf("  -0|--trcidr0 <TRCIDR0 value>            Give the value of TRCIDR0 which indicates conditional tracing type\n");
     printf("  -8|--trcidr8 <TRCIDR8 value>            Give the value of TRCIDR8 which indicates max speculation depth\n");
-    printf("  -9|--trcidr9 <TRCIDR9 value>            Give the value of TRCIDR9 which indicates p0_key_max\n");
+    printf("  -9|--trcidr9 <TRCIDR9 value>            Give the value of TRCIDR9 which indicates the number of P0 right-hand keys\n");
     printf("  -2|--trcidr12 <TRCIDR12 value>          Give the value of TRCIDR12 which indicates the number of right-hand keys for cond-inst elements\n");
     printf("  -3|--trcidr13 <TRCIDR13 value>          Give the value of TRCIDR13 which indicates the number of special right-hand keys for cond-inst elements\n\n");
     printf("  -d|--debuglog                           Enable debug messages\n");
