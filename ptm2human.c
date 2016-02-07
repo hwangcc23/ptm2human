@@ -18,6 +18,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <string.h>
 #include <getopt.h>
 #include <stdint.h>
@@ -102,6 +103,8 @@ int file2buff(const char *input_file, const char *buff, unsigned int buff_len)
 int main(int argc, char **argv)
 {
     int longindex, c, ret, pkttype = -1;
+    char *endptr;
+    long val;
     unsigned int trcidr12 = 0, trcidr13 = 0;
     const char *input_file = NULL;
     struct stream stream;
@@ -124,7 +127,12 @@ int main(int argc, char **argv)
             break;
 
         case 'c':
-            CONTEXTID_SIZE(&(stream.tracer)) = atoi(optarg);
+            val = strtol(optarg, &endptr, 0);
+            if (val == LONG_MAX || val == LONG_MIN || val < 0 || *endptr != '\0' || endptr == optarg) {
+                LOGE("Invalid argument %s\n", optarg);
+            } else {
+                CONTEXTID_SIZE(&(stream.tracer)) = val;
+            }
             break;
 
         case 'C':
@@ -152,23 +160,48 @@ int main(int argc, char **argv)
             break;
 
         case '0':
-            CONDTYPE(&(stream.tracer)) = (atoi(optarg) & 0x00003000) >> 12;
+            val = strtol(optarg, &endptr, 0);
+            if (val == LONG_MAX || val == LONG_MIN || val < 0 || *endptr != '\0' || endptr == optarg) {
+                LOGE("Invalid argument %s\n", optarg);
+            } else {
+                CONDTYPE(&(stream.tracer)) = (val & 0x00003000) >> 12;
+            }
             break;
 
         case '8':
-            MAX_SPEC_DEPTH(&(stream.tracer)) = atoi(optarg);
+            val = strtol(optarg, &endptr, 0);
+            if (val == LONG_MAX || val == LONG_MIN || val < 0 || *endptr != '\0' || endptr == optarg) {
+                LOGE("Invalid argument %s\n", optarg);
+            } else {
+                MAX_SPEC_DEPTH(&(stream.tracer)) = val;
+            }
             break;
 
         case '9':
-            P0_KEY_MAX(&(stream.tracer)) = atoi(optarg);
+            val = strtol(optarg, &endptr, 0);
+            if (val == LONG_MAX || val == LONG_MIN || val < 0 || *endptr != '\0' || endptr == optarg) {
+                LOGE("Invalid argument %s\n", optarg);
+            } else {
+                P0_KEY_MAX(&(stream.tracer)) = val;
+            }
             break;
 
         case '2':
-            trcidr12 = atoi(optarg);
+            val = strtol(optarg, &endptr, 0);
+            if (val == LONG_MAX || val == LONG_MIN || val < 0 || *endptr != '\0' || endptr == optarg) {
+                LOGE("Invalid argument %s\n", optarg);
+            } else {
+                trcidr12 = val;
+            }
             break;
 
         case '3':
-            trcidr13 = atoi(optarg);
+            val = strtol(optarg, &endptr, 0);
+            if (val == LONG_MAX || val == LONG_MIN || val < 0 || *endptr != '\0' || endptr == optarg) {
+                LOGE("Invalid argument %s\n", optarg);
+            } else {
+                trcidr13 = val;
+            }
             break;
 
         case 'd':
