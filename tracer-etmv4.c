@@ -308,7 +308,6 @@ static int __interpret_tokens(struct etmv4_tracer *tracer, unsigned int tokens, 
         return pos + 1;
     }
 
-    /* TODO: initialize CONDTYPE */
     if (CONDTYPE(tracer)) {
         token = (tokens >> pos) & 0x0F;
         if ((token & 0x03) == 0x03) {

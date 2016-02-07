@@ -38,6 +38,7 @@ static const struct option options[] =
     { "context", 1, 0, 'c' },
     { "cycle-accurate", 0, 0, 'C' },
     { "decode-ptm", 0, 0, 'p' },
+    { "trcidr0", 1, 0, '0' },
     { "trcidr8", 1, 0, '8' },
     { "trcidr9", 1, 0, '9' },
     { "trcidr12", 1, 0, '2' },
@@ -48,7 +49,7 @@ static const struct option options[] =
     { NULL, 0, 0, 0   },
 };
 
-static const char *optstring = "i:c:Cp8:9:2:3:edh";
+static const char *optstring = "i:c:Cp0:8:9:2:3:edh";
 
 void usage(void)
 {
@@ -59,6 +60,7 @@ void usage(void)
     printf("  -c|--context <context ID size>          Give the size of ContextID for PTM trace only\n");
     printf("  -C|--cycle-accurate                     Enable Cycle-Accurate for PTM trace only\n\n");
     printf("  -e|--decode-etmv4                       Decode ETMv4 trace\n");
+    printf("  -0|--trcidr0 <TRCIDR0 value>            Give the value of TRCIDR0 which indicates conditional tracing type\n");
     printf("  -8|--trcidr8 <TRCIDR8 value>            Give the value of TRCIDR8 which indicates max speculation depth\n");
     printf("  -9|--trcidr9 <TRCIDR9 value>            Give the value of TRCIDR9 which indicates p0_key_max\n");
     printf("  -2|--trcidr12 <TRCIDR12 value>          Give the value of TRCIDR12 which indicates the number of right-hand keys for cond-inst elements\n");
@@ -149,6 +151,10 @@ int main(int argc, char **argv)
             }
             break;
 
+        case '0':
+            CONDTYPE(&(stream.tracer)) = (atoi(optarg) & 0x00003000) >> 12;
+            break;
+
         case '8':
             MAX_SPEC_DEPTH(&(stream.tracer)) = atoi(optarg);
             break;
@@ -202,6 +208,12 @@ int main(int argc, char **argv)
         LOGE("Invalid context ID size %d\n", CONTEXTID_SIZE(&(stream.tracer)));
         return EXIT_FAILURE;
         break;
+    }
+
+    /* validate CONDTYPE in trcidr0 */
+    if (CONDTYPE(&(stream.tracer)) > 2) {
+        LOGE("Invalid CONDTYPE in TRCIDR0: %d (should be either 0 or 1)\n", CONDTYPE(&(stream.tracer)));
+        return EXIT_FAILURE;
     }
 
     /* validate trcidr12 and trcidr13 */
