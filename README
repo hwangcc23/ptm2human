@@ -1,18 +1,26 @@
-ptm2human: ptm trace to human-readable format
-=============================================
+ptm2human: ARM PTM (and ETMv4) trace to human-readable format
+=============================================================
 
 [About]:
-ptm2human is a decoder for trace data output by Program Trace Macrocells 
-(PTM) [1] as specified by the ARM's Program Flow Trace architecture document [2].
-It deconstructs ID packets and data packets from the formatter of ARM Coresight ETB [3],
+ptm2human is a decoder for trace data outputted by Program Trace Macrocell
+(PTM) [1][2] and Embedded Trace Macrocell (ETMv4) [3].
+It deconstructs ID packets and data packets from the formatter of ARM Coresight ETB [4],
 and then translates the trace data to a human-readable format. 
 
+[Build]:
+$./autogen.sh
+$ ./configure
+$ make
+
 [Usage]:
+-----
+ PTM
+-----
 1. Save the PTM trace stream into a file.
 2. Give the trace file to ptm2human:
-        $ ptm2human -i /path/to/trace/file -c 4
+        $ ptm2human -p -i /path/to/trace/file -c 4
    The result is printed to the stdout. Redirect it to a output file:
-        $ ptm2human -i /path/to/trace/file -c 4 1> /path/to/output/file
+        $ ptm2human -p -i /path/to/trace/file -c 4 1> /path/to/output/file
 3. Read traces in a human-readable format:
         $ more output.log
         Reading ptm_trace_stream.o
@@ -44,11 +52,68 @@ and then translates the trace data to a human-readable format.
         instruction addr at 0xc00ad954, ARM state,
         . . . 
 
+-------
+ ETMv4
+-------
+1. Save the ETMv4 trace stream into a file.
+2. Give the trace file to ptm2human:
+        $ ptm2human -e -i /path/to/trace/file
+   The result is printed to the stdout. Redirect it to a output file:
+        $ ptm2human -e -i /path/to/trace/file 1> /path/to/output/file
+3. Read traces in a human-readable format:
+        $ less output.log
+        Reading TraceDataArmv8_dualcore.dat
+        Decode trace stream of ID 0
+        Syncing the trace stream...
+        Decoding the trace stream...
+        TraceInfo - Cycle count enabled,
+                    Tracing of conditional non-branch instruction disabled,
+                    No explicit tracing of load instructions,
+                    No explicit tracing of store instructions,
+                    p0_key = 0x0,
+                    curr_spec_depth = 0,
+                    cc_threshold = 0xFF
+        TraceOn - A discontinuity in the trace stream
+        Context - Context ID = 0x56AC1F3E,
+                  VMID = 0x2E,
+                  Exception level = EL2,
+                  Security = NS,
+                  64-bit instruction
+        Address - Instruction address 0x0000000000400954, Instruction set Aarch64
+        ATOM - N
+        Commit - 1
+        ATOM - E
+        Commit - 1
+        Address - Instruction address 0x0000000000400910, Instruction set Aarch64
+        ATOM - E
+        Commit - 1
+        Address - Instruction address 0x00000000004008bc, Instruction set Aarch64
+        ATOM - E
+        Commit - 1
+        Address - Instruction address 0x0000000000400940, Instruction set Aarch64
+        ATOM - E
+        Commit - 1
+        Address - Instruction address 0x000000000040097c, Instruction set Aarch64
+        Complete decode of the trace stream
+        Decode trace stream of ID 1
+        Syncing the trace stream...
+        Decoding the trace stream...
+        TraceInfo - Cycle count enabled,
+                    Tracing of conditional non-branch instruction disabled,
+                    No explicit tracing of load instructions,
+                    No explicit tracing of store instructions,
+                    p0_key = 0x0,
+                    curr_spec_depth = 0,
+                    cc_threshold = 0xFF
+        TraceOn - A discontinuity in the trace stream
+        . . .
+
 [Reference]:
 [1] http://infocenter.arm.com/help/topic/com.arm.doc.ddi0401c/DDI0401C_coresight_ptm_a9_r1p0_trm.pdf
 [2] http://infocenter.arm.com/help/topic/com.arm.doc.ihi0035b/IHI0035B_cs_pft_v1_1_architecture_spec.pdf
-[3] http://infocenter.arm.com/help/topic/com.arm.doc.ddi0314h/DDI0314H_coresight_components_trm.pdf
+[3] http://infocenter.arm.com/help/topic/com.arm.doc.ihi0064c/index.html
+[4] http://infocenter.arm.com/help/topic/com.arm.doc.ddi0314h/DDI0314H_coresight_components_trm.pdf
 
 [TODO]:
-1. Support ETMv4 format.
+1. Support ETMv4 data traces.
 2. Translate the traced address to the source file and the line number.
