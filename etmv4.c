@@ -725,6 +725,8 @@ DECL_DECODE_FN(long_address)
         address |= (unsigned long long)pkt[index++] << 24;
         address |= (unsigned long long)pkt[index++] << 32;
         address |= (unsigned long long)pkt[index++] << 40;
+        address |= (unsigned long long)pkt[index++] << 48;
+        address |= (unsigned long long)pkt[index++] << 56;
         break;
 
     case 0x9e:
@@ -736,6 +738,8 @@ DECL_DECODE_FN(long_address)
         address |= (unsigned long long)pkt[index++] << 24;
         address |= (unsigned long long)pkt[index++] << 32;
         address |= (unsigned long long)pkt[index++] << 40;
+        address |= (unsigned long long)pkt[index++] << 48;
+        address |= (unsigned long long)pkt[index++] << 56;
         break;
 
     default:
