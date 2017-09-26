@@ -53,6 +53,7 @@ static int init_stream(struct stream *stream, struct stream *parent)
 int decode_etb_stream(struct stream *etb_stream)
 {
     struct stream *stream;
+    int ret = 0;
     int nr_stream, pkt_idx, byte_idx, id, cur_id, pre_id, nr_new, i, trace_stop = 0;
     unsigned char c, end, tmp;
 
@@ -71,7 +72,8 @@ int decode_etb_stream(struct stream *etb_stream)
         return -1;
     }
     if (init_stream(stream, etb_stream)) {
-        return -1;
+        ret = -1;
+        goto exit_decode_etb_stream;
     }
 
     for (pkt_idx = 0; pkt_idx < etb_stream->buff_len; pkt_idx += ETB_PACKET_SIZE) {
@@ -121,12 +123,14 @@ int decode_etb_stream(struct stream *etb_stream)
                         stream = realloc(stream, sizeof(struct stream) * nr_stream);
                         if (!stream) {
                             LOGE("Fail to re-allocate stream (%s)\n", strerror(errno));
-                            return -1;
+                            ret = -1;
+                            goto exit_decode_etb_stream;
                         }
                         for (i = (nr_stream - nr_new); i < nr_stream; i++) {
                             if (init_stream(&(stream[i]), etb_stream)) {
                                 LOGE("Fail to init stream %d\n", i);
-                                return -1;
+                                ret = -1;
+                                goto exit_decode_etb_stream;
                             }
                         }
                     }
@@ -151,7 +155,8 @@ int decode_etb_stream(struct stream *etb_stream)
         free(stream[i].buff);
     }
 
+exit_decode_etb_stream:
     free(stream);
 
-    return 0;
+    return ret;
 }
