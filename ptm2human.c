@@ -92,12 +92,12 @@ int file2buff(const char *input_file, const char *buff, unsigned int buff_len)
     LOGV("Reading %s\n", input_file);
     if (read(fd, (void *)buff, buff_len) != buff_len) {
         LOGE("Fail to read %s (%s)\n", input_file, strerror(errno));
+        close(fd);
         return -1;
+    } else {
+        close(fd);
+        return 0;
     }
-
-    close(fd);
-
-    return 0;
 }
 
 int main(int argc, char **argv)
