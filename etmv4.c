@@ -222,7 +222,7 @@ DECL_DECODE_FN(timestamp)
 
     for (index = 1, i = 0, nr_replace = 0; index < 10; i++) {
         data = pkt[index++];
-        ts |= (data & ~c_bit) << (7 * i);
+        ts |= (unsigned long long)(data & ~c_bit) << (7 * i);
         if (index != 9) {
             nr_replace += 7;
         } else {
@@ -1004,7 +1004,7 @@ DECL_DECODE_FN(atom_format_4)
         break;
 
     default:
-        LOGE("Invalid A in a ATOM format 4 packet\n");
+        /* Never reach here since the value of "A" must be between 0 and 3 */
         break;
     }
 
