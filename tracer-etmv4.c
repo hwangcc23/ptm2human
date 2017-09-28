@@ -393,7 +393,7 @@ void tracer_cond_result(void *t, int format, unsigned int param1, \
         pos = 0;
         do {
             next_pos = __interpret_tokens(tracer, tokens, pos);
-            if (!next_pos) {
+            if (next_pos) {
                 token = (tokens & ((1 << next_pos) - 1)) >> pos;
                 if (CONDTYPE(tracer)) {
                     OUTPUT("Conditional result - R key = %d, APSR indication: %s\n", \
