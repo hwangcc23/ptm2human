@@ -137,7 +137,7 @@ DECL_DECODE_FN(isync)
 
 DECL_DECODE_FN(atom)
 {
-    int i, c_bit, F_bit, index;
+    int i, c_bit, F_bit, index, cnt;
     unsigned int cyc_cnt;
     static const char F_bit_mask = 0x02, F_bit_shift = 1;
 
@@ -162,7 +162,21 @@ DECL_DECODE_FN(atom)
 
         return index;
     } else {
-        for (i = 1; i < 7; i++) {
+        cnt = 5;
+        for (i = 0x40; i > 0x02; i >>= 1) {
+            if (pkt[0] & i ){
+                break;
+            }
+            cnt--;
+        }
+        if (!cnt){
+             LOGE("Invalid atom packet");
+             return 1;
+        } else {
+             LOGD("Find %d atoms\n", cnt);
+        }
+
+        for (i = 1; i < (cnt + 1); i++) {
             if (pkt[0] & (1 << i)) {
                 LOGD("[N atom]\n");
             } else {
