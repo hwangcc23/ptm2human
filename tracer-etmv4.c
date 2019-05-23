@@ -234,7 +234,7 @@ void tracer_cond_inst(void *t, int format, unsigned int param1, unsigned int par
     int ci, i, z, num;
 
     if (COND_KEY_MAX_INCR(tracer) == 0) {
-        LOGE("cond_key_max_incr MUST NOT be zero for conditional instruction elements. Set it via input argrments --trcidr12 and --trcidr13\n");
+        LOGE("cond_key_max_incr MUST NOT be zero for conditional instruction elements. Set it via input arguments --trcidr12 and --trcidr13\n");
         return ;
     }
 
@@ -342,7 +342,7 @@ void tracer_cond_result(void *t, int format, unsigned int param1, \
     const int MAX_TOKENS_POS = 12;
 
     if (COND_KEY_MAX_INCR(tracer) == 0) {
-        LOGE("cond_key_max_incr MUST NOT be zero for conditional instruction elements. Set it via input argrments --trcidr12 and --trcidr13\n");
+        LOGE("cond_key_max_incr MUST NOT be zero for conditional instruction elements. Set it via input arguments --trcidr12 and --trcidr13\n");
         return ;
     }
 
