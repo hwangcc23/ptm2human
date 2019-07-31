@@ -1072,7 +1072,7 @@ DECL_DECODE_FN(atom_format_6)
     }
     LOGD("[atom format 6] A = %d, COUNT = %d\n", A, COUNT);
 
-    for (i = 0; i < (COUNT + 2); i++) {
+    for (i = 0; i <= (COUNT + 2); i++) {
         tracer_atom(&(stream->tracer), ATOM_TYPE_E);
     }
     tracer_atom(&(stream->tracer), (A)? ATOM_TYPE_N: ATOM_TYPE_E);
