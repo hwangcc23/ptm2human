@@ -60,9 +60,9 @@ DEF_TRACEPKT(address_context_32bit_is1, 0xff, 0x83);
 DEF_TRACEPKT(address_context_64bit_is0, 0xff, 0x85);
 DEF_TRACEPKT(address_context_64bit_is1, 0xff, 0x86);
 DEF_TRACEPKT(atom_format_1, 0xfe, 0xf6);
-DEF_TRACEPKT(atom_format_2, 0xfe, 0xd8);
-DEF_TRACEPKT(atom_format_3, 0xfe, 0xf8);
-DEF_TRACEPKT(atom_format_4, 0xfe, 0xdc);
+DEF_TRACEPKT(atom_format_2, 0xfc, 0xd8);
+DEF_TRACEPKT(atom_format_3, 0xf8, 0xf8);
+DEF_TRACEPKT(atom_format_4, 0xfc, 0xdc);
 DEF_TRACEPKT(atom_format_5, 0xd4, 0xd4);
 DEF_TRACEPKT(atom_format_6, 0xc0, 0xc0);
 DEF_TRACEPKT(q, 0xf0, 0xa0);
@@ -1066,6 +1066,10 @@ DECL_DECODE_FN(atom_format_6)
 
     A = (pkt[0] >> 5) & 0x01;
     COUNT = pkt[0] & 0x1f;
+    if (COUNT > 20) {
+        LOGE("Invalid COUNT in a ATOM format 6 packet\n");
+        return -1;
+    }
     LOGD("[atom format 6] A = %d, COUNT = %d\n", A, COUNT);
 
     for (i = 0; i < (COUNT + 2); i++) {
