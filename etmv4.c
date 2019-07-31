@@ -1052,7 +1052,7 @@ DECL_DECODE_FN(atom_format_5)
         break;
 
     default:
-        LOGE("Invalid ABC in a ATOM format 5 packet\n");
+        LOGE("Invalid ABC in an ATOM format 5 packet\n");
         break;
     }
 
@@ -1067,7 +1067,7 @@ DECL_DECODE_FN(atom_format_6)
     A = (pkt[0] >> 5) & 0x01;
     COUNT = pkt[0] & 0x1f;
     if (COUNT > 20) {
-        LOGE("Invalid COUNT in a ATOM format 6 packet\n");
+        LOGE("Invalid COUNT in an ATOM format 6 packet\n");
         return -1;
     }
     LOGD("[atom format 6] A = %d, COUNT = %d\n", A, COUNT);
