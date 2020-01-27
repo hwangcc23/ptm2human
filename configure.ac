@@ -7,7 +7,6 @@ AM_INIT_AUTOMAKE([foreign -Wall])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
-AC_PROG_CXX
 AC_PROG_CC
 
 # Checks for libraries.
