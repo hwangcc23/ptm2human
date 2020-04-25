@@ -63,8 +63,22 @@ DEF_TRACEPKT(atom_format_1, 0xfe, 0xf6);
 DEF_TRACEPKT(atom_format_2, 0xfc, 0xd8);
 DEF_TRACEPKT(atom_format_3, 0xf8, 0xf8);
 DEF_TRACEPKT(atom_format_4, 0xfc, 0xdc);
-DEF_TRACEPKT(atom_format_5, 0xd4, 0xd4);
-DEF_TRACEPKT(atom_format_6, 0xc0, 0xc0);
+DEF_TRACEPKT(atom_format_5_1, 0xff, 0xf5);
+DEF_TRACEPKT(atom_format_5_2, 0xff, 0xd5);
+DEF_TRACEPKT(atom_format_5_3, 0xff, 0xd6);
+DEF_TRACEPKT(atom_format_5_4, 0xff, 0xd7);
+DEF_TRACEPKT(atom_format_6_1, 0xff, 0xd0);
+DEF_TRACEPKT(atom_format_6_2, 0xff, 0xd1);
+DEF_TRACEPKT(atom_format_6_3, 0xff, 0xd2);
+DEF_TRACEPKT(atom_format_6_4, 0xff, 0xd3);
+DEF_TRACEPKT(atom_format_6_5, 0xff, 0xd4);
+DEF_TRACEPKT(atom_format_6_6, 0xff, 0xf0);
+DEF_TRACEPKT(atom_format_6_7, 0xff, 0xf1);
+DEF_TRACEPKT(atom_format_6_8, 0xff, 0xf2);
+DEF_TRACEPKT(atom_format_6_9, 0xff, 0xf3);
+DEF_TRACEPKT(atom_format_6_10, 0xff, 0xf4);
+DEF_TRACEPKT(atom_format_6_11, 0xf0, 0xc0);
+DEF_TRACEPKT(atom_format_6_12, 0xf0, 0xe0);
 DEF_TRACEPKT(q, 0xf0, 0xa0);
 
 DECL_DECODE_FN(extension)
@@ -1011,7 +1025,7 @@ DECL_DECODE_FN(atom_format_4)
     return 1;
 }
 
-DECL_DECODE_FN(atom_format_5)
+DECL_DECODE_FN(atom_format_5_1)
 {
     unsigned int ABC;
 
@@ -1059,7 +1073,22 @@ DECL_DECODE_FN(atom_format_5)
     return 1;
 }
 
-DECL_DECODE_FN(atom_format_6)
+DECL_DECODE_FN(atom_format_5_2)
+{
+	return decode_atom_format_5_1(pkt, stream);
+}
+
+DECL_DECODE_FN(atom_format_5_3)
+{
+	return decode_atom_format_5_1(pkt, stream);
+}
+
+DECL_DECODE_FN(atom_format_5_4)
+{
+	return decode_atom_format_5_1(pkt, stream);
+}
+
+DECL_DECODE_FN(atom_format_6_1)
 {
     unsigned int A, COUNT;
     int i;
@@ -1078,6 +1107,61 @@ DECL_DECODE_FN(atom_format_6)
     tracer_atom(&(stream->tracer), (A)? ATOM_TYPE_N: ATOM_TYPE_E);
 
     return 1;
+}
+
+DECL_DECODE_FN(atom_format_6_2)
+{
+	return decode_atom_format_6_1(pkt, stream);
+}
+
+DECL_DECODE_FN(atom_format_6_3)
+{
+	return decode_atom_format_6_1(pkt, stream);
+}
+
+DECL_DECODE_FN(atom_format_6_4)
+{
+	return decode_atom_format_6_1(pkt, stream);
+}
+
+DECL_DECODE_FN(atom_format_6_5)
+{
+	return decode_atom_format_6_1(pkt, stream);
+}
+
+DECL_DECODE_FN(atom_format_6_6)
+{
+	return decode_atom_format_6_1(pkt, stream);
+}
+
+DECL_DECODE_FN(atom_format_6_7)
+{
+	return decode_atom_format_6_1(pkt, stream);
+}
+
+DECL_DECODE_FN(atom_format_6_8)
+{
+	return decode_atom_format_6_1(pkt, stream);
+}
+
+DECL_DECODE_FN(atom_format_6_9)
+{
+	return decode_atom_format_6_1(pkt, stream);
+}
+
+DECL_DECODE_FN(atom_format_6_10)
+{
+	return decode_atom_format_6_1(pkt, stream);
+}
+
+DECL_DECODE_FN(atom_format_6_11)
+{
+	return decode_atom_format_6_1(pkt, stream);
+}
+
+DECL_DECODE_FN(atom_format_6_12)
+{
+	return decode_atom_format_6_1(pkt, stream);
 }
 
 DECL_DECODE_FN(q)
@@ -1218,8 +1302,22 @@ struct tracepkt *etmv4pkts[] =
     &PKT_NAME(atom_format_2),
     &PKT_NAME(atom_format_3),
     &PKT_NAME(atom_format_4),
-    &PKT_NAME(atom_format_5),
-    &PKT_NAME(atom_format_6),
+    &PKT_NAME(atom_format_5_1),
+    &PKT_NAME(atom_format_5_2),
+    &PKT_NAME(atom_format_5_3),
+    &PKT_NAME(atom_format_5_4),
+    &PKT_NAME(atom_format_6_1),
+    &PKT_NAME(atom_format_6_2),
+    &PKT_NAME(atom_format_6_3),
+    &PKT_NAME(atom_format_6_4),
+    &PKT_NAME(atom_format_6_5),
+    &PKT_NAME(atom_format_6_6),
+    &PKT_NAME(atom_format_6_7),
+    &PKT_NAME(atom_format_6_8),
+    &PKT_NAME(atom_format_6_9),
+    &PKT_NAME(atom_format_6_10),
+    &PKT_NAME(atom_format_6_11),
+    &PKT_NAME(atom_format_6_12),
     &PKT_NAME(q),
     NULL,
 };
