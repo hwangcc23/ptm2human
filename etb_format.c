@@ -109,6 +109,7 @@ int decode_etb_stream(struct stream *etb_stream)
                     /* ID byte */
                     id = (c >> 1) & 0x7f;
                     if (id == NULL_TRACE_SOURCE) {
+                        LOGD("Found a NULL_TRACE_SOURCE ID in the ETB data packet\n");
                         trace_stop = 1;
                         break;
                     } else {
@@ -149,9 +150,13 @@ int decode_etb_stream(struct stream *etb_stream)
     }
 
     for (i = 0; i < nr_stream; i++) {
-        OUTPUT("Decode trace stream of ID %d\n", i);
         LOGD("There are %d bytes in the stream %d\n", stream[i].buff_len, i);
-        decode_stream(&(stream[i]));
+        if (stream[i].buff_len != 0) {
+            OUTPUT("Decode trace stream of ID %d\n", i);
+            decode_stream(&(stream[i]));
+        } else {
+            OUTPUT("There is no valid data in the stream of ID %d\n", i);
+        }
         free(stream[i].buff);
     }
 
