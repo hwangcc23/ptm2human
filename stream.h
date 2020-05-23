@@ -1,4 +1,6 @@
 /*
+ * vim:ts=4:sw=4:expandtab
+ *
  * stream.h: header of trace stream
  * Copyright (C) 2013  Chih-Chyuan Hwang (hwangcc@csie.nctu.edu.tw)
  *
