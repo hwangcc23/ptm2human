@@ -881,6 +881,8 @@ DECL_DECODE_FN(address_context)
         address |= (unsigned long long)pkt[index++] << 24;
         address |= (unsigned long long)pkt[index++] << 32;
         address |= (unsigned long long)pkt[index++] << 40;
+        address |= (unsigned long long)pkt[index++] << 48;
+        address |= (unsigned long long)pkt[index++] << 56;
         break;
 
     case 0x86:
@@ -892,6 +894,8 @@ DECL_DECODE_FN(address_context)
         address |= (unsigned long long)pkt[index++] << 24;
         address |= (unsigned long long)pkt[index++] << 32;
         address |= (unsigned long long)pkt[index++] << 40;
+        address |= (unsigned long long)pkt[index++] << 48;
+        address |= (unsigned long long)pkt[index++] << 56;
         break;
 
     default:
@@ -918,7 +922,7 @@ DECL_DECODE_FN(address_context)
 
     LOGD("[address with context] address = 0x%016llx, IS = %d, EL = %d, SF = %d, NS = %d, V = %d, C = %d, VMID = %d, CONTEXTID = 0x%04X\n", address, IS, EL, SF, NS, V, C, VMID, CONTEXTID);
 
-    tracer_context(&(stream->tracer), 0, EL, SF, NS, V, VMID, C, CONTEXTID);
+    tracer_context(&(stream->tracer), 1, EL, SF, NS, V, VMID, C, CONTEXTID);
     tracer_address(&(stream->tracer));
 
     return index;
