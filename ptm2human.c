@@ -38,6 +38,7 @@ int debuglog_on = 0;
 static const struct option options[] = 
 {
     { "input", 1, 0, 'i' },
+    { "unaligned", 0, 0, 'u' },
     { "context", 1, 0, 'c' },
     { "cycle-accurate", 0, 0, 'C' },
     { "decode-ptm", 0, 0, 'p' },
@@ -52,13 +53,14 @@ static const struct option options[] =
     { NULL, 0, 0, 0   },
 };
 
-static const char *optstring = "i:c:Cp0:8:9:2:3:edh";
+static const char *optstring = "i:c:Cp0:8:9:2:3:edhu";
 
 void usage(void)
 {
     printf("Usage: ptm2human [options] -i /TRACE/FILE/PATH\n");
     printf("Options:\n");
-    printf("  -i|--input <trace file>                 Give the trace file\n\n");
+    printf("  -i|--input <trace file>                 Give the trace file\n");
+    printf("  -u|--unaligned                          Trace is unaligned and needs to be aligned by FSYNC\n\n");
     printf("  -p|--decode-ptm (default option)        Decode PTM trace\n");
     printf("  -c|--context <context ID size>          Give the size of ContextID for PTM trace only\n");
     printf("  -C|--cycle-accurate                     Enable Cycle-Accurate for PTM trace only\n\n");
@@ -109,6 +111,7 @@ int main(int argc, char **argv)
     long val;
     unsigned int trcidr12 = 0, trcidr13 = 0;
     const char *input_file = NULL;
+    int unaligned = 0;
     struct stream stream;
     struct stat sb;
 
@@ -126,6 +129,9 @@ int main(int argc, char **argv)
         switch (c) {
         case 'i':
             input_file = strdup(optarg);
+            break;
+        case 'u':
+            unaligned = 1;
             break;
 
         case 'c':
@@ -276,7 +282,7 @@ int main(int argc, char **argv)
 
     file2buff(input_file, stream.buff, stream.buff_len);
 
-    ret = decode_etb_stream(&stream);
+    ret = decode_etb_stream(&stream, unaligned);
 
     free((void *)stream.buff);
 
