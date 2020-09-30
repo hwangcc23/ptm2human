@@ -166,7 +166,8 @@ int main(int argc, char **argv)
             if (val == LONG_MAX || val == LONG_MIN || val < 0 || *endptr != '\0' || endptr == optarg) {
                 LOGE("Invalid argument %s\n", optarg);
             } else {
-                CONDTYPE(&(stream.tracer)) = (val & 0x00003000) >> 12;
+                CONDTYPE(&(stream.tracer)) = (val & 0x00003000ul) >> 12;
+                COMMOPT(&(stream.tracer))  = (val & 0x20000000ul) >> 29;
             }
             break;
 
