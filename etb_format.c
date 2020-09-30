@@ -88,7 +88,7 @@ int decode_etb_stream(struct stream *etb_stream, int unaligned)
         }
 
         if (!ofs) {
-            OUTPUT("No FSYNC found.");
+            OUTPUT("No FSYNC found.\n");
             ret = -1;
             goto exit_decode_etb_stream;
         }
@@ -99,6 +99,11 @@ int decode_etb_stream(struct stream *etb_stream, int unaligned)
         if (trace_stop) {
             break;
         }
+
+        if (memcmp(&fsync, &etb_stream->buff[pkt_idx], sizeof(fsync)) == 0) {
+            pkt_idx = pkt_idx+sizeof(fsync);
+        }
+
         end = etb_stream->buff[pkt_idx + ETB_PACKET_SIZE - 1];
         for (byte_idx = 0; byte_idx < (ETB_PACKET_SIZE - 1); byte_idx++) {
             c = etb_stream->buff[pkt_idx + byte_idx];
