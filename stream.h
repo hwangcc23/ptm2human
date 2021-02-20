@@ -43,6 +43,6 @@ struct stream
 };
 
 extern int decode_stream(struct stream *stream);
-extern int decode_etb_stream(struct stream *stream);
+extern int decode_etb_stream(struct stream *etb_stream, int unaligned);
 
 #endif

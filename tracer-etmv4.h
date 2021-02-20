@@ -43,6 +43,7 @@ struct etmv4_tracer
        CONDTYPE_APSR      - Provide the value of the APSR condition flags
      */
     int condtype;
+    int commopt;
 
     /* Trace analyzer state between receiving packets */
     unsigned long long timestamp;
@@ -64,6 +65,7 @@ struct etmv4_tracer
 
 #define TRACE_INFO(t) (((struct etmv4_tracer *)(t))->info)
 #define CONDTYPE(t) (((struct etmv4_tracer *)(t))->condtype)
+#define COMMOPT(t) (((struct etmv4_tracer *)(t))->commopt)
 #define TIMESTAMP(t) (((struct etmv4_tracer *)(t))->timestamp)
 #define ADDRESS_REGISTER(t) ((struct etmv4_tracer *)(t))->address_register
 #define RESET_ADDRESS_REGISTER(t)   \
