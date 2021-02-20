@@ -109,7 +109,7 @@ void tracer_ts(void *t, unsigned long long timestamp, int have_cc, unsigned int 
 {
     struct etmv4_tracer *tracer = (struct etmv4_tracer *)t;
 
-    if (!timestamp) {
+    if (timestamp) {
         TIMESTAMP(tracer) &= ~((1LL << nr_replace) - 1);
         TIMESTAMP(tracer) |= timestamp;
     }
