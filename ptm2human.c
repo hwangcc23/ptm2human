@@ -60,7 +60,7 @@ void usage(void)
     printf("Usage: ptm2human [options] -i /TRACE/FILE/PATH\n");
     printf("Options:\n");
     printf("  -i|--input <trace file>                 Give the trace file\n");
-    printf("  -u|--unaligned                          Trace is unaligned and needs to be aligned by FSYNC\n\n");
+    printf("  -u|--unaligned                          Trace is unaligned and needs to be aligned by frame synchronization packet\n\n");
     printf("  -p|--decode-ptm (default option)        Decode PTM trace\n");
     printf("  -c|--context <context ID size>          Give the size of ContextID for PTM trace only\n");
     printf("  -C|--cycle-accurate                     Enable Cycle-Accurate for PTM trace only\n\n");

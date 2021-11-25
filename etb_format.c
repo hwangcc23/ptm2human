@@ -59,7 +59,7 @@ int decode_etb_stream(struct stream *etb_stream, int unaligned)
     int nr_stream, pkt_idx, byte_idx, id, cur_id, pre_id, nr_new, i, b, trace_stop = 0;
     int ofs = 0;
     unsigned char c, end, tmp;
-    const unsigned char fsync[] = {0xff,0xff,0xff, 0x7f};
+    const unsigned char fsync[] = { 0xff, 0xff, 0xff, 0x7f };
 
     if (!etb_stream) {
         LOGE("Invalid stream pointer\n");
@@ -88,7 +88,7 @@ int decode_etb_stream(struct stream *etb_stream, int unaligned)
         }
 
         if (!ofs) {
-            OUTPUT("No FSYNC found.\n");
+            LOGE("No frame synchronization packet found.\n");
             ret = -1;
             goto exit_decode_etb_stream;
         }
