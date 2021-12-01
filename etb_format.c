@@ -52,12 +52,14 @@ static int init_stream(struct stream *stream, struct stream *parent)
     return 0;
 }
 
-int decode_etb_stream(struct stream *etb_stream)
+int decode_etb_stream(struct stream *etb_stream, int unaligned)
 {
     struct stream *stream;
     int ret = 0;
-    int nr_stream, pkt_idx, byte_idx, id, cur_id, pre_id, nr_new, i, trace_stop = 0;
+    int nr_stream, pkt_idx, byte_idx, id, cur_id, pre_id, nr_new, i, b, trace_stop = 0;
+    int ofs = 0;
     unsigned char c, end, tmp;
+    const unsigned char fsync[] = { 0xff, 0xff, 0xff, 0x7f };
 
     if (!etb_stream) {
         LOGE("Invalid stream pointer\n");
@@ -78,10 +80,30 @@ int decode_etb_stream(struct stream *etb_stream)
         goto exit_decode_etb_stream;
     }
 
-    for (pkt_idx = 0; pkt_idx < etb_stream->buff_len; pkt_idx += ETB_PACKET_SIZE) {
+    if (unaligned) {
+        for (b = 0; b < etb_stream->buff_len-sizeof(fsync)-1; b++) {
+            if (memcmp(&fsync, &etb_stream->buff[b], sizeof(fsync)) == 0) {
+                ofs = b+sizeof(fsync); break;
+            }
+        }
+
+        if (!ofs) {
+            LOGE("No frame synchronization packet found.\n");
+            ret = -1;
+            goto exit_decode_etb_stream;
+        }
+    }
+    else { ofs = 0; }
+
+    for (pkt_idx = ofs; pkt_idx < etb_stream->buff_len; pkt_idx += ETB_PACKET_SIZE) {
         if (trace_stop) {
             break;
         }
+
+        if (memcmp(&fsync, &etb_stream->buff[pkt_idx], sizeof(fsync)) == 0) {
+            pkt_idx = pkt_idx+sizeof(fsync);
+        }
+
         end = etb_stream->buff[pkt_idx + ETB_PACKET_SIZE - 1];
         for (byte_idx = 0; byte_idx < (ETB_PACKET_SIZE - 1); byte_idx++) {
             c = etb_stream->buff[pkt_idx + byte_idx];

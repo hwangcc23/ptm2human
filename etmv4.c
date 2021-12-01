@@ -326,8 +326,7 @@ DECL_DECODE_FN(cc_format_1)
     unsigned char data;
     unsigned int commit = 0, count = 0;
 
-    /* FIXME: need to get TRCIDR0.COMMOPT */
-    if (1) {
+    if (!COMMOPT(&(stream->tracer))) {
         for (i = 0; i < 4; i++) {
             data = pkt[index++];
             commit |= (data & ~c_bit) << (7 * i);
@@ -394,8 +393,7 @@ DECL_DECODE_FN(cc_format_3)
     BB = (pkt[0] & 0x03);
     LOGD("[cycle count format 3] AA = %d, BB = %x\n", AA, BB);
 
-    /* FIXME: need to get TRCIDR0.COMMOPT */
-    if (1) {
+    if (!COMMOPT(&(stream->tracer))) {
         tracer_commit(&(stream->tracer), AA + 1);
     }
 
@@ -1337,6 +1335,7 @@ int etmv4_synchronization(struct stream *stream)
     LOGD("P0_KEY_MAX = %d\n", P0_KEY_MAX(&(stream->tracer)));
     LOGD("COND_KEY_MAX_INCR = %d\n", COND_KEY_MAX_INCR(&(stream->tracer)));
     LOGD("CONDTYPE = %d\n", CONDTYPE(&(stream->tracer)));
+    LOGD("COMMOPT = %d\n", COMMOPT(&(stream->tracer)));
 
     /* locate an async packet and search for a trace-info packet */
     for (i = 0; i < stream->buff_len; i++) {
