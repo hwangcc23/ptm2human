@@ -681,7 +681,7 @@ DECL_DECODE_FN(short_address)
         address |= (unsigned long long)(pkt[index++] & 0x7F) << 1;
         if (pkt[1] & c_bit) {
             address &= ~0x0000FF00LL;
-            address &= (unsigned long long)pkt[index++] << 8;
+            address |= (unsigned long long)pkt[index++] << 8;
         }
     }
 
